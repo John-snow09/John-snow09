@@ -1,5 +1,1 @@
-
-<!---
-John-snow09/John-snow09 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-You can click the Preview link to take a look at your changes.
---->
+Tool to compare subtitles quality to determine best one to use.
