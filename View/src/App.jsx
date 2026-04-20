@@ -61,9 +61,9 @@ function App() {
         className="bg-white border-r flex flex-col justify-between"
       >
 
-        {/* TOP */}
         <div>
 
+          {/* TOP */}
           <div className="flex items-center justify-between p-4 border-b">
             <div className="text-xl">❄️</div>
 
@@ -87,7 +87,7 @@ function App() {
                   }
                 `}
               >
-                <span>{item.icon}</span>
+                {item.icon}
                 {sidebarOpen && (
                   <span className="text-sm font-medium">
                     {item.label}
@@ -100,7 +100,7 @@ function App() {
 
         </div>
 
-        {/* FOOTER */}
+        {/* SIDEBAR FOOTER */}
         <div className="p-4 text-xs text-gray-500 border-t">
           API: <span className="text-green-600 font-medium">Online</span>
         </div>
@@ -128,7 +128,7 @@ function App() {
 
         </div>
 
-        {/* WORKSPACE CONTAINER */}
+        {/* WORKSPACE */}
         <div className="flex-1 px-4 sm:px-6 lg:px-10 py-8 flex justify-center">
 
           <div className="w-full max-w-6xl">
@@ -138,7 +138,6 @@ function App() {
               {/* MAIN PANEL */}
               <div className="lg:col-span-2 space-y-6">
 
-                {/* UPLOAD CARD */}
                 <div className="bg-white border rounded-2xl p-6 shadow-sm">
 
                   <h2 className="font-semibold text-lg mb-1">
@@ -179,7 +178,6 @@ function App() {
 
                 {/* RESULTS */}
                 <AnimatePresence>
-
                   {data?.results && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
@@ -199,10 +197,7 @@ function App() {
                           key={i}
                           className="bg-white border rounded-xl p-4 hover:shadow-md transition"
                         >
-                          <div className="font-semibold">
-                            {r.filename}
-                          </div>
-
+                          <div className="font-semibold">{r.filename}</div>
                           <div className="text-sm text-gray-500 mt-1">
                             Score: {r.score}
                           </div>
@@ -211,7 +206,6 @@ function App() {
 
                     </motion.div>
                   )}
-
                 </AnimatePresence>
 
               </div>
@@ -246,12 +240,38 @@ function App() {
 
         </div>
 
-        {/* FOOTER */}
-        <div className="bg-white border-t p-4 flex justify-center gap-6 text-gray-500">
+        {/* ================= FOOTER (YOUR LINKS ADDED) ================= */}
+        <div className="bg-white border-t p-4 flex justify-center gap-6 text-gray-500 text-3xl">
 
-          <FaInstagram className="hover:text-pink-500 cursor-pointer transition" />
-          <FaTwitter className="hover:text-blue-500 cursor-pointer transition" />
-          <FaGithub className="hover:text-black cursor-pointer transition" />
+          {/* Instagram */}
+          <a
+            href="https://www.instagram.com/___john_snow_"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-pink-500 hover:scale-110 transition"
+          >
+            <FaInstagram />
+          </a>
+
+          {/* Twitter (X) */}
+          <a
+            href="https://x.com/JohnSnow320411"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-blue-500 hover:scale-110 transition"
+          >
+            <FaTwitter />
+          </a>
+
+          {/* GitHub */}
+          <a
+            href="https://github.com/John-snow09"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-black hover:scale-110 transition"
+          >
+            <FaGithub />
+          </a>
 
         </div>
 
