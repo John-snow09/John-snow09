@@ -5,7 +5,7 @@ function App() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // 🔵 Backend URL (change later for Render)
+  // 🌐 Your deployed backend
   const API_BASE = "https://choose-your-sub.onrender.com";
 
   const handleUpload = async () => {
@@ -42,15 +42,28 @@ function App() {
 
   return (
     <div style={styles.container}>
+
+      {/* 🟢 HEADER */}
       <h1 style={styles.title}>🎬 SRT Script Analyzer</h1>
 
-      <input
-        type="file"
-        multiple
-        accept=".srt"
-        onChange={(e) => setFiles(Array.from(e.target.files))}
-        style={styles.input}
-      />
+      <p style={styles.subtitle}>
+        Upload multiple <b>.srt</b> files and compare quality, richness, and structure.
+      </p>
+
+      {/* 📂 UPLOAD SECTION */}
+      <div style={styles.uploadRow}>
+        <input
+          type="file"
+          multiple
+          accept=".srt"
+          onChange={(e) => setFiles(Array.from(e.target.files))}
+          style={styles.input}
+        />
+
+        <span style={styles.note}>
+          ⚠️ Only .srt files allowed
+        </span>
+      </div>
 
       <p>{files.length} file(s) selected</p>
 
@@ -60,6 +73,7 @@ function App() {
 
       {loading && <p>⏳ Processing files...</p>}
 
+      {/* 📊 RESULTS */}
       {data && (
         <div style={styles.results}>
           <h2>📊 Mode: {data.mode}</h2>
@@ -105,12 +119,34 @@ const styles = {
     fontFamily: "Arial",
     textAlign: "center",
   },
+
   title: {
-    marginBottom: "20px",
+    marginBottom: "10px",
   },
-  input: {
+
+  subtitle: {
+    marginBottom: "20px",
+    color: "#555",
+    fontSize: "16px",
+  },
+
+  uploadRow: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "15px",
     marginBottom: "15px",
   },
+
+  input: {
+    marginBottom: "0",
+  },
+
+  note: {
+    fontSize: "14px",
+    color: "#888",
+  },
+
   button: {
     padding: "10px 20px",
     background: "#007bff",
@@ -119,12 +155,15 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
   },
+
   results: {
     marginTop: "30px",
   },
+
   best: {
     color: "green",
   },
+
   card: {
     background: "#fff",
     padding: "15px",
