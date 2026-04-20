@@ -3,7 +3,10 @@ import { motion } from "framer-motion";
 import { FaRocket, FaFileAlt, FaChartBar } from "react-icons/fa";
 
 function App() {
-  const [active, setActive] = useState("landing");
+  // ✅ FIXED STATE
+  const [page, setPage] = useState("landing");
+  const [tool, setTool] = useState("srt");
+
   const [files, setFiles] = useState([]);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -28,7 +31,8 @@ function App() {
 
       const result = await res.json();
       setData(result);
-    } catch {
+    } catch (err) {
+      console.error(err);
       alert("Backend error");
     } finally {
       setLoading(false);
@@ -37,8 +41,8 @@ function App() {
 
   return (
     <>
-      {/* 🌐 LANDING PAGE */}
-      {active === "landing" && (
+      {/* ================= LANDING PAGE ================= */}
+      {page === "landing" && (
         <div className="min-h-screen bg-gradient-to-br from-indigo-600 to-purple-700 text-white flex flex-col items-center justify-center text-center px-6">
 
           <motion.h1
@@ -50,13 +54,13 @@ function App() {
           </motion.h1>
 
           <p className="max-w-xl text-lg mb-6 text-gray-200">
-            Smart developer tools to analyze, optimize and improve your content.
+            Smart developer tools to analyze and improve your content.
           </p>
 
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setActive("dashboard")}
+            onClick={() => setPage("dashboard")}
             className="bg-white text-indigo-700 px-6 py-3 rounded-xl font-semibold shadow-lg"
           >
             🚀 Get Started
@@ -77,7 +81,7 @@ function App() {
               <FaChartBar className="text-2xl mb-3 mx-auto" />
               <h3 className="font-semibold">Analytics</h3>
               <p className="text-sm text-gray-200 mt-2">
-                Visual insights (coming soon)
+                Coming soon
               </p>
             </div>
 
@@ -85,7 +89,7 @@ function App() {
               <FaRocket className="text-2xl mb-3 mx-auto" />
               <h3 className="font-semibold">More Tools</h3>
               <p className="text-sm text-gray-200 mt-2">
-                Expanding tool ecosystem
+                Expanding ecosystem
               </p>
             </div>
 
@@ -93,8 +97,8 @@ function App() {
         </div>
       )}
 
-      {/* 📊 DASHBOARD */}
-      {active === "dashboard" && (
+      {/* ================= DASHBOARD ================= */}
+      {page === "dashboard" && (
         <div className="flex min-h-screen bg-gray-100">
 
           {/* Sidebar */}
@@ -102,30 +106,39 @@ function App() {
             <h1 className="text-xl font-bold mb-6">❄️ Snowlabs</h1>
 
             <button
-              onClick={() => setActive("landing")}
+              onClick={() => setPage("landing")}
               className="mb-4 text-sm text-gray-500 hover:text-indigo-600"
             >
               ← Back to Home
             </button>
 
             <nav className="space-y-4">
-              <button onClick={() => setActive("srt")} className="block hover:text-indigo-600">
+              <button
+                onClick={() => setTool("srt")}
+                className="block hover:text-indigo-600"
+              >
                 🎬 SRT Analyzer
               </button>
 
-              <button className="block opacity-50">
+              <button
+                onClick={() => setTool("analytics")}
+                className="block hover:text-indigo-600"
+              >
                 📊 Analytics (Soon)
               </button>
             </nav>
           </div>
 
-          {/* Content */}
+          {/* Main Content */}
           <div className="flex-1 p-8">
-            {active === "srt" && (
+
+            {/* SRT TOOL */}
+            {tool === "srt" && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <h2 className="text-xl font-bold mb-4">🎬 SRT Analyzer</h2>
 
                 <div className="bg-white p-6 rounded-xl shadow">
+
                   <input
                     type="file"
                     multiple
@@ -144,7 +157,7 @@ function App() {
                   {data && (
                     <div className="mt-5">
                       <h3 className="font-semibold mb-2">
-                        Best: {data.best_file}
+                        🏆 Best: {data.best_file}
                       </h3>
 
                       {data.results.map((r, i) => (
@@ -156,14 +169,23 @@ function App() {
                               : "bg-gray-50"
                           }`}
                         >
-                          <b>{r.filename}</b> - Score: {r.score}
+                          <b>{r.filename}</b> — Score: {r.score}
                         </div>
                       ))}
                     </div>
                   )}
+
                 </div>
               </motion.div>
             )}
+
+            {/* ANALYTICS */}
+            {tool === "analytics" && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <h2 className="text-xl font-bold">📊 Coming Soon</h2>
+              </motion.div>
+            )}
+
           </div>
         </div>
       )}
