@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { FaRocket, FaFileAlt, FaChartBar } from "react-icons/fa";
 
 function App() {
-  // ✅ FIXED STATE
   const [page, setPage] = useState("landing");
   const [tool, setTool] = useState("srt");
 
@@ -24,6 +23,7 @@ function App() {
 
     try {
       setLoading(true);
+
       const res = await fetch(`${API_BASE}/compare`, {
         method: "POST",
         body: formData,
@@ -41,7 +41,7 @@ function App() {
 
   return (
     <>
-      {/* ================= LANDING PAGE ================= */}
+      {/* ================= LANDING ================= */}
       {page === "landing" && (
         <div className="min-h-screen bg-gradient-to-br from-indigo-600 to-purple-700 text-white flex flex-col items-center justify-center text-center px-6">
 
@@ -66,7 +66,6 @@ function App() {
             🚀 Get Started
           </motion.button>
 
-          {/* Features */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
 
             <div className="bg-white/10 p-6 rounded-xl backdrop-blur">
@@ -132,12 +131,16 @@ function App() {
           {/* Main Content */}
           <div className="flex-1 p-8">
 
-            {/* SRT TOOL */}
+            {/* ================= SRT TOOL ================= */}
             {tool === "srt" && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <h2 className="text-xl font-bold mb-4">🎬 SRT Analyzer</h2>
 
                 <div className="bg-white p-6 rounded-xl shadow">
+
+                  <p className="text-sm text-gray-500 mb-2">
+                    Upload multiple <b>.srt</b> files to compare quality and richness.
+                  </p>
 
                   <input
                     type="file"
@@ -154,24 +157,39 @@ function App() {
                     {loading ? "Processing..." : "Compare"}
                   </button>
 
-                  {data && (
-                    <div className="mt-5">
-                      <h3 className="font-semibold mb-2">
-                        🏆 Best: {data.best_file}
-                      </h3>
+                  {/* RESULTS */}
+                  {data && data.results && data.results.length > 0 && (
+                    <div className="mt-6">
 
+                      {/* 🏆 BEST FILE */}
+                      <div className="bg-green-100 border border-green-300 p-4 rounded-lg mb-4">
+                        <h3 className="text-lg font-bold text-green-700">
+                          🏆 Best Script: {data.best_file}
+                        </h3>
+                      </div>
+
+                      {/* 📋 ALL FILES */}
                       {data.results.map((r, i) => (
                         <div
                           key={i}
-                          className={`p-3 mb-2 rounded ${
+                          className={`p-4 mb-3 rounded-lg shadow ${
                             r.filename === data.best_file
-                              ? "bg-green-100"
-                              : "bg-gray-50"
+                              ? "bg-green-50 border border-green-300"
+                              : "bg-white"
                           }`}
                         >
-                          <b>{r.filename}</b> — Score: {r.score}
+                          <h4 className="font-semibold mb-1">
+                            {i + 1}. {r.filename}
+                          </h4>
+
+                          <p><b>Score:</b> {r.score}</p>
+                          <p><b>Reason:</b> {r.reason}</p>
+                          <p><b>Words:</b> {r.details.word_count}</p>
+                          <p><b>Diversity:</b> {r.details.diversity}</p>
+                          <p><b>Avg Sentence Length:</b> {r.details.avg_sentence_length}</p>
                         </div>
                       ))}
+
                     </div>
                   )}
 
@@ -179,7 +197,7 @@ function App() {
               </motion.div>
             )}
 
-            {/* ANALYTICS */}
+            {/* ================= ANALYTICS ================= */}
             {tool === "analytics" && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <h2 className="text-xl font-bold">📊 Coming Soon</h2>
