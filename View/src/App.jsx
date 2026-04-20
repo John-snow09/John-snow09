@@ -22,7 +22,7 @@ function App() {
   const API_BASE = "https://choose-your-sub.onrender.com";
 
   const handleUpload = async () => {
-    if (files.length === 0) return alert("Select files");
+    if (!files.length) return alert("Select files");
 
     const formData = new FormData();
     files.forEach((f) => formData.append("files", f));
@@ -37,7 +37,7 @@ function App() {
 
       const result = await res.json();
       setData(result);
-    } catch (e) {
+    } catch {
       alert("Backend error");
     } finally {
       setLoading(false);
@@ -52,11 +52,12 @@ function App() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 text-gray-900">
 
       {/* ================= SIDEBAR ================= */}
       <motion.div
-        animate={{ width: sidebarOpen ? 260 : 70 }}
+        animate={{ width: sidebarOpen ? 260 : 72 }}
+        transition={{ type: "spring", stiffness: 260, damping: 25 }}
         className="bg-white border-r flex flex-col justify-between"
       >
 
@@ -72,18 +73,26 @@ function App() {
           </div>
 
           {/* NAV */}
-          <div className="p-2 space-y-2">
+          <div className="p-2 space-y-1">
 
             {menu.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setActive(item.id)}
-                className={`flex items-center gap-3 w-full p-2 rounded-lg transition
-                  ${active === item.id ? "bg-black text-white" : "hover:bg-gray-100"}
+                className={`flex items-center gap-3 w-full px-3 py-2 rounded-xl transition
+                  ${
+                    active === item.id
+                      ? "bg-black text-white"
+                      : "hover:bg-gray-100 text-gray-700"
+                  }
                 `}
               >
-                {item.icon}
-                {sidebarOpen && item.label}
+                <span>{item.icon}</span>
+                {sidebarOpen && (
+                  <span className="text-sm font-medium">
+                    {item.label}
+                  </span>
+                )}
               </button>
             ))}
 
@@ -92,117 +101,145 @@ function App() {
         </div>
 
         {/* FOOTER */}
-        <div className="p-4 border-t text-xs text-gray-500">
-          API: <span className="text-green-600">Online</span>
+        <div className="p-4 text-xs text-gray-500 border-t">
+          API: <span className="text-green-600 font-medium">Online</span>
         </div>
 
       </motion.div>
 
-      {/* ================= MAIN AREA ================= */}
+      {/* ================= MAIN ================= */}
       <div className="flex-1 flex flex-col">
 
         {/* TOPBAR */}
         <div className="bg-white border-b px-6 py-4 flex justify-between items-center">
 
-          <h1 className="font-semibold text-gray-800">
-            {menu.find((m) => m.id === active)?.label}
-          </h1>
+          <div>
+            <h1 className="font-semibold text-gray-800">
+              {menu.find((m) => m.id === active)?.label}
+            </h1>
+            <p className="text-xs text-gray-500">
+              Upload and analyze subtitle files
+            </p>
+          </div>
 
-          <div className="text-xs text-gray-500">
+          <div className="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-600">
             Production Mode
           </div>
 
         </div>
 
-        {/* WORKSPACE */}
-        <div className="flex-1 p-8 grid grid-cols-3 gap-6">
+        {/* WORKSPACE CONTAINER */}
+        <div className="flex-1 px-4 sm:px-6 lg:px-10 py-8 flex justify-center">
 
-          {/* MAIN PANEL */}
-          <div className="col-span-2">
+          <div className="w-full max-w-6xl">
 
-            {/* TOOL CARD */}
-            <div className="bg-white border rounded-2xl p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-              <h2 className="font-semibold mb-2">
-                Upload Files
-              </h2>
+              {/* MAIN PANEL */}
+              <div className="lg:col-span-2 space-y-6">
 
-              <p className="text-sm text-gray-500 mb-4">
-                Compare subtitle quality using AI scoring engine
-              </p>
+                {/* UPLOAD CARD */}
+                <div className="bg-white border rounded-2xl p-6 shadow-sm">
 
-              <input
-                type="file"
-                multiple
-                onChange={(e) => setFiles(Array.from(e.target.files))}
-              />
+                  <h2 className="font-semibold text-lg mb-1">
+                    Upload Files
+                  </h2>
 
-              <button
-                onClick={handleUpload}
-                className="mt-4 bg-black text-white px-5 py-2 rounded-xl hover:bg-gray-800 transition"
-              >
-                {loading ? "Processing..." : "Run Analysis"}
-              </button>
+                  <p className="text-sm text-gray-500 mb-5">
+                    Compare subtitle quality using AI scoring engine
+                  </p>
 
-            </div>
+                  <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-black transition">
 
-            {/* RESULTS */}
-            <AnimatePresence>
+                    <input
+                      type="file"
+                      multiple
+                      onChange={(e) => setFiles(Array.from(e.target.files))}
+                      className="hidden"
+                      id="fileInput"
+                    />
 
-              {data?.results && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-6 space-y-3"
-                >
+                    <label
+                      htmlFor="fileInput"
+                      className="cursor-pointer text-sm text-gray-600"
+                    >
+                      Drop files here or click to upload
+                    </label>
 
-                  {/* BEST */}
-                  <div className="bg-green-50 border border-green-200 p-4 rounded-xl">
-                    🏆 Best File: {data.best_file}
                   </div>
 
-                  {/* LIST */}
-                  {data.results.map((r, i) => (
-                    <div
-                      key={i}
-                      className="bg-white border rounded-xl p-4 hover:shadow-md transition"
+                  <button
+                    onClick={handleUpload}
+                    className="mt-5 w-full bg-black text-white py-2.5 rounded-xl hover:bg-gray-800 transition active:scale-95"
+                  >
+                    {loading ? "Processing..." : "Run Analysis"}
+                  </button>
+
+                </div>
+
+                {/* RESULTS */}
+                <AnimatePresence>
+
+                  {data?.results && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="space-y-3"
                     >
-                      <div className="font-semibold">{r.filename}</div>
-                      <div className="text-sm text-gray-500">
-                        Score: {r.score}
+
+                      <div className="bg-green-50 border border-green-200 p-4 rounded-xl">
+                        🏆 Best File:{" "}
+                        <span className="font-semibold">
+                          {data.best_file}
+                        </span>
                       </div>
-                    </div>
-                  ))}
 
-                </motion.div>
-              )}
+                      {data.results.map((r, i) => (
+                        <div
+                          key={i}
+                          className="bg-white border rounded-xl p-4 hover:shadow-md transition"
+                        >
+                          <div className="font-semibold">
+                            {r.filename}
+                          </div>
 
-            </AnimatePresence>
+                          <div className="text-sm text-gray-500 mt-1">
+                            Score: {r.score}
+                          </div>
+                        </div>
+                      ))}
 
-          </div>
+                    </motion.div>
+                  )}
 
-          {/* RIGHT PANEL */}
-          <div className="space-y-4">
+                </AnimatePresence>
 
-            <div className="bg-white border rounded-xl p-4">
-              <h3 className="font-semibold">System Status</h3>
-              <p className="text-green-600 text-sm">All systems operational</p>
-            </div>
+              </div>
 
-            <div className="bg-white border rounded-xl p-4">
-              <h3 className="font-semibold">Usage</h3>
-              <p className="text-sm text-gray-500">
-                Free tier active
-              </p>
-            </div>
+              {/* RIGHT PANEL */}
+              <div className="space-y-4">
 
-            <div className="bg-white border rounded-xl p-4">
-              <h3 className="font-semibold">Coming Features</h3>
-              <ul className="text-sm text-gray-500 mt-2">
-                <li>AI insights</li>
-                <li>Batch processing</li>
-                <li>Export reports</li>
-              </ul>
+                <div className="bg-white border rounded-xl p-4">
+                  <h3 className="font-semibold">System Status</h3>
+                  <p className="text-green-600 text-sm">All systems operational</p>
+                </div>
+
+                <div className="bg-white border rounded-xl p-4">
+                  <h3 className="font-semibold">Usage</h3>
+                  <p className="text-sm text-gray-500">Free tier active</p>
+                </div>
+
+                <div className="bg-white border rounded-xl p-4">
+                  <h3 className="font-semibold">Coming Features</h3>
+                  <ul className="text-sm text-gray-500 mt-2 space-y-1">
+                    <li>AI insights</li>
+                    <li>Batch processing</li>
+                    <li>Export reports</li>
+                  </ul>
+                </div>
+
+              </div>
+
             </div>
 
           </div>
@@ -210,10 +247,12 @@ function App() {
         </div>
 
         {/* FOOTER */}
-        <div className="bg-white border-t p-3 flex justify-center gap-6 text-gray-500">
-          <FaInstagram className="hover:text-pink-500 cursor-pointer" />
-          <FaTwitter className="hover:text-blue-500 cursor-pointer" />
-          <FaGithub className="hover:text-black cursor-pointer" />
+        <div className="bg-white border-t p-4 flex justify-center gap-6 text-gray-500">
+
+          <FaInstagram className="hover:text-pink-500 cursor-pointer transition" />
+          <FaTwitter className="hover:text-blue-500 cursor-pointer transition" />
+          <FaGithub className="hover:text-black cursor-pointer transition" />
+
         </div>
 
       </div>
