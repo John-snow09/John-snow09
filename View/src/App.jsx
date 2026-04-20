@@ -1,10 +1,19 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { FaRocket, FaFileAlt, FaChartBar, FaInstagram, FaTwitter, FaGithub } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FaBars,
+  FaFileAlt,
+  FaChartBar,
+  FaHistory,
+  FaCog,
+  FaGithub,
+  FaTwitter,
+  FaInstagram,
+} from "react-icons/fa";
 
 function App() {
-  const [page, setPage] = useState("landing");
-  const [tool, setTool] = useState("srt");
+  const [active, setActive] = useState("srt");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const [files, setFiles] = useState([]);
   const [data, setData] = useState(null);
@@ -13,13 +22,10 @@ function App() {
   const API_BASE = "https://choose-your-sub.onrender.com";
 
   const handleUpload = async () => {
-    if (files.length === 0) {
-      alert("Select .srt files");
-      return;
-    }
+    if (files.length === 0) return alert("Select files");
 
     const formData = new FormData();
-    files.forEach((file) => formData.append("files", file));
+    files.forEach((f) => formData.append("files", f));
 
     try {
       setLoading(true);
@@ -31,209 +37,188 @@ function App() {
 
       const result = await res.json();
       setData(result);
-    } catch (err) {
-      console.error(err);
+    } catch (e) {
       alert("Backend error");
     } finally {
       setLoading(false);
     }
   };
 
+  const menu = [
+    { id: "srt", label: "SRT Analyzer", icon: <FaFileAlt /> },
+    { id: "analytics", label: "Analytics", icon: <FaChartBar /> },
+    { id: "history", label: "History", icon: <FaHistory /> },
+    { id: "settings", label: "Settings", icon: <FaCog /> },
+  ];
+
   return (
-    <>
-      {/* ================= LANDING ================= */}
-      {page === "landing" && (
-        <div className="min-h-screen bg-gradient-to-br from-indigo-600 to-purple-700 text-white flex flex-col items-center justify-center text-center px-6">
+    <div className="flex min-h-screen bg-gray-50">
 
-          <motion.h1
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl font-bold mb-4"
-          >
-            ❄️ Snowlabs
-          </motion.h1>
+      {/* ================= SIDEBAR ================= */}
+      <motion.div
+        animate={{ width: sidebarOpen ? 260 : 70 }}
+        className="bg-white border-r flex flex-col justify-between"
+      >
 
-          <p className="max-w-xl text-lg mb-6 text-gray-200">
-            Smart developer tools to analyze and improve your content.
-          </p>
+        {/* TOP */}
+        <div>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setPage("dashboard")}
-            className="bg-white text-indigo-700 px-6 py-3 rounded-xl font-semibold shadow-lg"
-          >
-            🚀 Get Started
-          </motion.button>
+          <div className="flex items-center justify-between p-4 border-b">
+            <div className="text-xl">❄️</div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)}>
+              <FaBars />
+            </button>
+          </div>
 
-            <div className="bg-white/10 p-6 rounded-xl backdrop-blur">
-              <FaFileAlt className="text-2xl mb-3 mx-auto" />
-              <h3 className="font-semibold">SRT Analyzer</h3>
-              <p className="text-sm text-gray-200 mt-2">
-                Compare subtitle quality instantly
-              </p>
-            </div>
+          {/* NAV */}
+          <div className="p-2 space-y-2">
 
-            <div className="bg-white/10 p-6 rounded-xl backdrop-blur">
-              <FaChartBar className="text-2xl mb-3 mx-auto" />
-              <h3 className="font-semibold">Analytics</h3>
-              <p className="text-sm text-gray-200 mt-2">
-                Coming soon
-              </p>
-            </div>
-
-            <div className="bg-white/10 p-6 rounded-xl backdrop-blur">
-              <FaRocket className="text-2xl mb-3 mx-auto" />
-              <h3 className="font-semibold">More Tools</h3>
-              <p className="text-sm text-gray-200 mt-2">
-                Expanding ecosystem
-              </p>
-            </div>
+            {menu.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActive(item.id)}
+                className={`flex items-center gap-3 w-full p-2 rounded-lg transition
+                  ${active === item.id ? "bg-black text-white" : "hover:bg-gray-100"}
+                `}
+              >
+                {item.icon}
+                {sidebarOpen && item.label}
+              </button>
+            ))}
 
           </div>
+
         </div>
-      )}
 
-      {/* ================= DASHBOARD ================= */}
-      {page === "dashboard" && (
-        <div className="flex flex-col min-h-screen bg-gray-100">
+        {/* FOOTER */}
+        <div className="p-4 border-t text-xs text-gray-500">
+          API: <span className="text-green-600">Online</span>
+        </div>
 
-          <div className="flex flex-1">
+      </motion.div>
 
-            {/* ================= SIDEBAR ================= */}
-            <div className="w-64 bg-white shadow-lg p-5 flex flex-col justify-between">
+      {/* ================= MAIN AREA ================= */}
+      <div className="flex-1 flex flex-col">
 
-              <div>
-                <h1 className="text-xl font-bold mb-8">❄️ Snowlabs</h1>
+        {/* TOPBAR */}
+        <div className="bg-white border-b px-6 py-4 flex justify-between items-center">
 
-                <button
-                  onClick={() => setPage("landing")}
-                  className="mb-6 text-sm text-gray-500 hover:text-indigo-600"
+          <h1 className="font-semibold text-gray-800">
+            {menu.find((m) => m.id === active)?.label}
+          </h1>
+
+          <div className="text-xs text-gray-500">
+            Production Mode
+          </div>
+
+        </div>
+
+        {/* WORKSPACE */}
+        <div className="flex-1 p-8 grid grid-cols-3 gap-6">
+
+          {/* MAIN PANEL */}
+          <div className="col-span-2">
+
+            {/* TOOL CARD */}
+            <div className="bg-white border rounded-2xl p-6">
+
+              <h2 className="font-semibold mb-2">
+                Upload Files
+              </h2>
+
+              <p className="text-sm text-gray-500 mb-4">
+                Compare subtitle quality using AI scoring engine
+              </p>
+
+              <input
+                type="file"
+                multiple
+                onChange={(e) => setFiles(Array.from(e.target.files))}
+              />
+
+              <button
+                onClick={handleUpload}
+                className="mt-4 bg-black text-white px-5 py-2 rounded-xl hover:bg-gray-800 transition"
+              >
+                {loading ? "Processing..." : "Run Analysis"}
+              </button>
+
+            </div>
+
+            {/* RESULTS */}
+            <AnimatePresence>
+
+              {data?.results && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-6 space-y-3"
                 >
-                  ← Back to Home
-                </button>
 
-                <nav className="space-y-3">
-                  <button
-                    onClick={() => setTool("srt")}
-                    className={`block w-full text-left px-3 py-2 rounded-lg transition ${
-                      tool === "srt"
-                        ? "bg-indigo-50 text-indigo-600"
-                        : "hover:bg-indigo-50 hover:text-indigo-600"
-                    }`}
-                  >
-                    🎬 SRT Analyzer
-                  </button>
-
-                  <button
-                    onClick={() => setTool("analytics")}
-                    className="block w-full text-left px-3 py-2 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition"
-                  >
-                    📊 Analytics (Soon)
-                  </button>
-                </nav>
-              </div>
-
-            </div>
-
-            {/* ================= MAIN ================= */}
-            <div className="flex-1 p-8">
-
-              {tool === "srt" && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-
-                  <h2 className="text-xl font-bold mb-4">🎬 SRT Analyzer</h2>
-
-                  <div className="bg-white p-6 rounded-xl shadow">
-
-                    <p className="text-sm text-gray-500 mb-2">
-                      Upload multiple <b>.srt</b> files to compare quality.
-                    </p>
-
-                    <input
-                      type="file"
-                      multiple
-                      accept=".srt,text/plain,application/x-subrip"
-                      onChange={(e) => setFiles(Array.from(e.target.files))}
-                      className="mb-3"
-                    />
-
-                    <button
-                      onClick={handleUpload}
-                      className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
-                    >
-                      {loading ? "Processing..." : "Compare"}
-                    </button>
-
-                    {/* RESULTS */}
-                    {data && data.results && (
-                      <div className="mt-6">
-
-                        <div className="bg-green-100 border border-green-300 p-4 rounded-lg mb-4">
-                          <h3 className="text-lg font-bold text-green-700">
-                            🏆 Best Script: {data.best_file}
-                          </h3>
-                        </div>
-
-                        {data.results.map((r, i) => (
-                          <div
-                            key={i}
-                            className={`p-4 mb-3 rounded-lg shadow hover:shadow-md transition ${
-                              r.filename === data.best_file
-                                ? "bg-green-50 border border-green-300"
-                                : "bg-white"
-                            }`}
-                          >
-                            <h4 className="font-semibold mb-1">
-                              {i + 1}. {r.filename}
-                            </h4>
-
-                            <p><b>Score:</b> {r.score}</p>
-                            <p><b>Reason:</b> {r.reason}</p>
-                            <p><b>Words:</b> {r.details.word_count}</p>
-                            <p><b>Diversity:</b> {r.details.diversity}</p>
-                            <p><b>Avg Sentence Length:</b> {r.details.avg_sentence_length}</p>
-                          </div>
-                        ))}
-
-                      </div>
-                    )}
-
+                  {/* BEST */}
+                  <div className="bg-green-50 border border-green-200 p-4 rounded-xl">
+                    🏆 Best File: {data.best_file}
                   </div>
+
+                  {/* LIST */}
+                  {data.results.map((r, i) => (
+                    <div
+                      key={i}
+                      className="bg-white border rounded-xl p-4 hover:shadow-md transition"
+                    >
+                      <div className="font-semibold">{r.filename}</div>
+                      <div className="text-sm text-gray-500">
+                        Score: {r.score}
+                      </div>
+                    </div>
+                  ))}
+
                 </motion.div>
               )}
 
-              {tool === "analytics" && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <h2 className="text-xl font-bold">📊 Coming Soon</h2>
-                </motion.div>
-              )}
+            </AnimatePresence>
 
-            </div>
           </div>
 
-          {/* ================= FOOTER ================= */}
-          <div className="bg-white border-t py-4 flex justify-center space-x-6">
+          {/* RIGHT PANEL */}
+          <div className="space-y-4">
 
-            <a href="#" className="text-gray-500 hover:text-pink-500 text-xl transition">
-              <FaInstagram />
-            </a>
+            <div className="bg-white border rounded-xl p-4">
+              <h3 className="font-semibold">System Status</h3>
+              <p className="text-green-600 text-sm">All systems operational</p>
+            </div>
 
-            <a href="#" className="text-gray-500 hover:text-blue-500 text-xl transition">
-              <FaTwitter />
-            </a>
+            <div className="bg-white border rounded-xl p-4">
+              <h3 className="font-semibold">Usage</h3>
+              <p className="text-sm text-gray-500">
+                Free tier active
+              </p>
+            </div>
 
-            <a href="#" className="text-gray-500 hover:text-gray-900 text-xl transition">
-              <FaGithub />
-            </a>
+            <div className="bg-white border rounded-xl p-4">
+              <h3 className="font-semibold">Coming Features</h3>
+              <ul className="text-sm text-gray-500 mt-2">
+                <li>AI insights</li>
+                <li>Batch processing</li>
+                <li>Export reports</li>
+              </ul>
+            </div>
 
           </div>
 
         </div>
-      )}
-    </>
+
+        {/* FOOTER */}
+        <div className="bg-white border-t p-3 flex justify-center gap-6 text-gray-500">
+          <FaInstagram className="hover:text-pink-500 cursor-pointer" />
+          <FaTwitter className="hover:text-blue-500 cursor-pointer" />
+          <FaGithub className="hover:text-black cursor-pointer" />
+        </div>
+
+      </div>
+
+    </div>
   );
 }
 
