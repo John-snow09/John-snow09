@@ -6,7 +6,7 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   // 🔵 Backend URL (change later for Render)
-  const API_BASE = "http://127.0.0.1:8000";
+  const API_BASE = "https://choose-your-sub.onrender.com";
 
   const handleUpload = async () => {
     if (files.length === 0) {

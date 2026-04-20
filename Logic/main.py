@@ -8,7 +8,11 @@ app = FastAPI()
 # ✅ CORS (React + Production safe)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # change later to your Render URL if needed
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://choose-your-sub.onrender.com"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
