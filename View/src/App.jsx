@@ -58,7 +58,7 @@ function App() {
           </p>
 
           <motion.button
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setPage("dashboard")}
             className="bg-white text-indigo-700 px-6 py-3 rounded-xl font-semibold shadow-lg"
@@ -145,14 +145,14 @@ function App() {
                   <input
                     type="file"
                     multiple
-                    accept=".srt"
+                    accept=".srt,text/plain,application/x-subrip"
                     onChange={(e) => setFiles(Array.from(e.target.files))}
                     className="mb-3"
                   />
 
                   <button
                     onClick={handleUpload}
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
                   >
                     {loading ? "Processing..." : "Compare"}
                   </button>
@@ -161,18 +161,16 @@ function App() {
                   {data && data.results && data.results.length > 0 && (
                     <div className="mt-6">
 
-                      {/* 🏆 BEST FILE */}
                       <div className="bg-green-100 border border-green-300 p-4 rounded-lg mb-4">
                         <h3 className="text-lg font-bold text-green-700">
                           🏆 Best Script: {data.best_file}
                         </h3>
                       </div>
 
-                      {/* 📋 ALL FILES */}
                       {data.results.map((r, i) => (
                         <div
                           key={i}
-                          className={`p-4 mb-3 rounded-lg shadow ${
+                          className={`p-4 mb-3 rounded-lg shadow hover:shadow-md transition ${
                             r.filename === data.best_file
                               ? "bg-green-50 border border-green-300"
                               : "bg-white"
