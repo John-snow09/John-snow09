@@ -5,7 +5,6 @@ function App() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // 🌐 Your deployed backend
   const API_BASE = "https://choose-your-sub.onrender.com";
 
   const handleUpload = async () => {
@@ -25,13 +24,8 @@ function App() {
         body: formData,
       });
 
-      if (!res.ok) {
-        throw new Error("Backend error");
-      }
-
       const result = await res.json();
       setData(result);
-
     } catch (err) {
       console.error(err);
       alert("Error connecting to backend");
@@ -41,83 +35,76 @@ function App() {
   };
 
   return (
-    <div style={styles.container}>
+    <div style={styles.page}>
+      <div style={styles.container}>
+        
+        <h1 style={styles.title}>🎬 SRT Analyzer</h1>
+        <p style={styles.subtitle}>
+          Upload subtitle files and find the best quality script instantly.
+        </p>
 
-      {/* 🟢 HEADER */}
-      <h1 style={styles.title}>🎬 SRT Script Analyzer</h1>
-
-      <p style={styles.subtitle}>
-        Upload multiple <b>.srt</b> files and compare quality, richness, and structure.
-      </p>
-
-      {/* 📂 UPLOAD SECTION */}
-      <div style={styles.uploadRow}>
-        <input
-          type="file"
-          multiple
-          accept=".srt"
-          onChange={(e) => setFiles(Array.from(e.target.files))}
-          style={styles.input}
-        />
-
-        <span style={styles.note}>
-          ⚠️ Only .srt files allowed
-        </span>
-      </div>
-
-      <p>{files.length} file(s) selected</p>
-
-      <button onClick={handleUpload} style={styles.button}>
-        Compare Scripts
-      </button>
-
-      {loading && <p>⏳ Processing files...</p>}
-
-      {/* 📊 RESULTS */}
-      {data && (
-        <div style={styles.results}>
-          <h2>📊 Mode: {data.mode}</h2>
-
-          <h2 style={styles.best}>
-            🏆 Best Script: {data.best_file}
-          </h2>
-
-          {data.results.map((r, i) => (
-            <div
-              key={i}
-              style={{
-                ...styles.card,
-                border:
-                  r.filename === data.best_file
-                    ? "2px solid green"
-                    : "1px solid #ccc",
-              }}
-            >
-              <h3>
-                {i + 1}. {r.filename}
-              </h3>
-
-              <p><b>Score:</b> {r.score}</p>
-              <p><b>Reason:</b> {r.reason}</p>
-              <p><b>Words:</b> {r.details.word_count}</p>
-              <p><b>Unique Words:</b> {r.details.unique_words}</p>
-              <p><b>Diversity:</b> {r.details.diversity}</p>
-              <p><b>Avg Sentence Length:</b> {r.details.avg_sentence_length}</p>
-            </div>
-          ))}
+        <div style={styles.uploadBox}>
+          <input
+            type="file"
+            multiple
+            accept=".srt"
+            onChange={(e) => setFiles(Array.from(e.target.files))}
+          />
+          <p style={styles.note}>Only .srt files supported</p>
         </div>
-      )}
+
+        <button onClick={handleUpload} style={styles.button}>
+          {loading ? "Processing..." : "Compare Scripts"}
+        </button>
+
+        {data && (
+          <div style={styles.results}>
+            <h2 style={styles.mode}>Mode: {data.mode}</h2>
+
+            {data.results.map((r, i) => (
+              <div
+                key={i}
+                style={{
+                  ...styles.card,
+                  ...(r.filename === data.best_file && styles.bestCard),
+                }}
+              >
+                <h3>{r.filename}</h3>
+
+                <p><b>Score:</b> {r.score}</p>
+                <p>{r.reason}</p>
+
+                <div style={styles.metrics}>
+                  <span>Words: {r.details.word_count}</span>
+                  <span>Unique: {r.details.unique_words}</span>
+                  <span>Diversity: {r.details.diversity}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 const styles = {
-  container: {
+  page: {
     minHeight: "100vh",
+    background: "linear-gradient(135deg, #667eea, #764ba2)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    fontFamily: "Segoe UI",
+  },
+
+  container: {
+    background: "rgba(255,255,255,0.95)",
     padding: "40px",
-    background: "#f4f6f8",
-    fontFamily: "Arial",
+    borderRadius: "20px",
+    width: "420px",
     textAlign: "center",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
   },
 
   title: {
@@ -125,53 +112,60 @@ const styles = {
   },
 
   subtitle: {
-    marginBottom: "20px",
     color: "#555",
-    fontSize: "16px",
+    marginBottom: "25px",
   },
 
-  uploadRow: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "15px",
+  uploadBox: {
+    border: "2px dashed #ccc",
+    padding: "20px",
+    borderRadius: "10px",
     marginBottom: "15px",
   },
 
-  input: {
-    marginBottom: "0",
-  },
-
   note: {
-    fontSize: "14px",
+    fontSize: "12px",
     color: "#888",
   },
 
   button: {
-    padding: "10px 20px",
-    background: "#007bff",
-    color: "#fff",
+    marginTop: "10px",
+    padding: "12px 25px",
+    borderRadius: "8px",
     border: "none",
-    borderRadius: "6px",
+    background: "#667eea",
+    color: "#fff",
     cursor: "pointer",
+    fontSize: "16px",
   },
 
   results: {
     marginTop: "30px",
+    textAlign: "left",
   },
 
-  best: {
-    color: "green",
+  mode: {
+    textAlign: "center",
   },
 
   card: {
     background: "#fff",
     padding: "15px",
-    margin: "10px auto",
     borderRadius: "10px",
-    width: "320px",
-    textAlign: "left",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+    marginTop: "10px",
+    boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
+  },
+
+  bestCard: {
+    border: "2px solid #4caf50",
+    background: "#f0fff4",
+  },
+
+  metrics: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginTop: "10px",
+    fontSize: "14px",
   },
 };
 
