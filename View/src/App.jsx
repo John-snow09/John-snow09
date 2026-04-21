@@ -73,33 +73,42 @@ function App() {
             <div className="flex justify-between items-center px-6 py-5">
               <h1 className="font-bold text-xl">❄️ Snowlabs</h1>
 
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className="text-sm border px-3 py-1 rounded-lg"
-              >
-                {darkMode ? "☀️ Light" : "🌙 Dark"}
-              </button>
+              {/* RIGHT SIDE BUTTONS */}
+              <div className="flex items-center gap-3">
+
+                {/* LOGIN BUTTON (ADDED) */}
+                <button
+                  onClick={() => alert("Login clicked")}
+                  className="px-4 py-2 text-sm rounded-xl border hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                >
+                  Login
+                </button>
+
+                <button
+                  onClick={() => setDarkMode(!darkMode)}
+                  className="text-sm border px-3 py-1 rounded-lg"
+                >
+                  {darkMode ? "☀️ Light" : "🌙 Dark"}
+                </button>
+
+              </div>
             </div>
 
             {/* HERO (PREMIUM CENTERED) */}
             <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
 
-              {/* BADGE */}
               <div className="px-4 py-1 mb-6 text-sm rounded-full border bg-gray-50 dark:bg-gray-900">
                 AI-powered subtitle intelligence
               </div>
 
-              {/* TITLE */}
               <h1 className="text-5xl font-bold mb-4 max-w-3xl leading-tight">
                 Analyze & Compare Subtitle Files in Seconds
               </h1>
 
-              {/* SUBTITLE */}
               <p className="text-gray-500 max-w-xl mb-8 text-lg">
                 Upload multiple SRT files and automatically detect the best quality using intelligent scoring.
               </p>
 
-              {/* CTA */}
               <button
                 onClick={() => setPage("dashboard")}
                 className="bg-black text-white dark:bg-white dark:text-black px-8 py-3 rounded-xl flex items-center gap-2 hover:scale-105 transition"
@@ -214,7 +223,6 @@ function App() {
 
               </div>
 
-              {/* TOOL CARD */}
               {active === "srt" && (
                 <div className="border rounded-2xl p-6 bg-white dark:bg-gray-800 shadow-sm">
 
