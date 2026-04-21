@@ -19,6 +19,12 @@ function App() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  /* ================= LOGIN STATES ================= */
+  const [user, setUser] = useState(null);
+  const [showLogin, setShowLogin] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   const API_BASE = "https://choose-your-sub.onrender.com";
 
   useEffect(() => {
@@ -48,6 +54,16 @@ function App() {
     }
   };
 
+  const handleLogin = () => {
+    if (!email || !password) return alert("Fill details");
+
+    // fake login (UI only)
+    setUser({ email });
+    setShowLogin(false);
+    setEmail("");
+    setPassword("");
+  };
+
   const menu = [
     { id: "srt", label: "SRT Analyzer", icon: <FaFileAlt /> },
     { id: "analytics", label: "Analytics", icon: <FaChartBar /> },
@@ -57,6 +73,93 @@ function App() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white">
 
+      {/* ================= LOGIN MODAL ================= */}
+<AnimatePresence>
+  {showLogin && (
+    <>
+      {/* BACKDROP */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={() => setShowLogin(false)}
+        className="fixed inset-0 bg-black/50 z-40"
+      />
+
+      {/* MODAL */}
+      <motion.div
+  initial={{ scale: 0.9, opacity: 0 }}
+  animate={{ scale: 1, opacity: 1 }}
+  exit={{ scale: 0.9, opacity: 0 }}
+  className="fixed inset-0 z-50 flex items-center justify-center"
+>
+  
+  {/* BACKDROP */}
+  <div
+    onClick={() => setShowLogin(false)}
+    className="absolute inset-0 bg-black/50"
+  />
+
+  {/* MODAL CARD */}
+  <div className="relative w-[360px] bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-2xl border">
+
+    <h2 className="text-xl font-bold mb-1">Welcome back</h2>
+    <p className="text-sm text-gray-500 mb-6">
+      Sign in to continue to Snowlabs
+    </p>
+
+    {/* GOOGLE LOGIN */}
+    <button
+      onClick={() => alert("Google OAuth coming soon")}
+      className="w-full flex items-center justify-center gap-2 border py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition mb-4"
+    >
+      <img
+        src="https://www.svgrepo.com/show/475656/google-color.svg"
+        className="w-5 h-5"
+        alt="google"
+      />
+      Continue with Google
+    </button>
+
+    {/* DIVIDER */}
+    <div className="flex items-center gap-3 my-4">
+      <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+      <span className="text-xs text-gray-400">OR</span>
+      <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+    </div>
+
+    {/* EMAIL */}
+    <input
+      type="email"
+      placeholder="Email"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+      className="w-full mb-3 p-2 border rounded-lg bg-transparent"
+    />
+
+    <input
+      type="password"
+      placeholder="Password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      className="w-full mb-4 p-2 border rounded-lg bg-transparent"
+    />
+
+    <button
+      onClick={handleLogin}
+      className="w-full bg-black text-white py-2 rounded-xl hover:scale-105 transition"
+    >
+      Sign In
+    </button>
+
+  </div>
+
+</motion.div>
+    </>
+  )}
+</AnimatePresence>
+
+      {/* ================= APP ================= */}
       <AnimatePresence mode="wait">
 
         {/* ================= LANDING ================= */}
@@ -73,16 +176,21 @@ function App() {
             <div className="flex justify-between items-center px-6 py-5">
               <h1 className="font-bold text-xl">❄️ Snowlabs</h1>
 
-              {/* RIGHT SIDE BUTTONS */}
-              <div className="flex items-center gap-3">
+              <div className="flex gap-3 items-center">
 
-                {/* LOGIN BUTTON (ADDED) */}
-                <button
-                  onClick={() => alert("Login clicked")}
-                  className="px-4 py-2 text-sm rounded-xl border hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-                >
-                  Login
-                </button>
+                {/* LOGIN BUTTON (REAL MODAL) */}
+                {!user ? (
+                  <button
+                    onClick={() => setShowLogin(true)}
+                    className="px-4 py-2 text-sm rounded-xl border hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                  >
+                    Login
+                  </button>
+                ) : (
+                  <div className="text-sm">
+                    👤 {user.email}
+                  </div>
+                )}
 
                 <button
                   onClick={() => setDarkMode(!darkMode)}
@@ -94,7 +202,7 @@ function App() {
               </div>
             </div>
 
-            {/* HERO (PREMIUM CENTERED) */}
+            {/* HERO */}
             <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
 
               <div className="px-4 py-1 mb-6 text-sm rounded-full border bg-gray-50 dark:bg-gray-900">
