@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaBars,
@@ -18,6 +18,20 @@ function App() {
   const [files, setFiles] = useState([]);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // 🌙 DARK MODE STATE
+  const [darkMode, setDarkMode] = useState(false);
+
+  // FIX: apply dark class properly
+  useEffect(() => {
+    const root = document.documentElement;
+
+    if (darkMode) {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+  }, [darkMode]);
 
   const API_BASE = "https://choose-your-sub.onrender.com";
 
@@ -52,19 +66,17 @@ function App() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50 text-gray-900">
+    <div className="flex min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white">
 
       {/* ================= SIDEBAR ================= */}
       <motion.div
         animate={{ width: sidebarOpen ? 260 : 72 }}
-        transition={{ type: "spring", stiffness: 260, damping: 25 }}
-        className="bg-white border-r flex flex-col justify-between"
+        className="bg-white dark:bg-gray-800 border-r dark:border-gray-700 flex flex-col justify-between"
       >
 
         <div>
 
-          {/* TOP */}
-          <div className="flex items-center justify-between p-4 border-b">
+          <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
             <div className="text-xl">❄️</div>
 
             <button onClick={() => setSidebarOpen(!sidebarOpen)}>
@@ -72,7 +84,6 @@ function App() {
             </button>
           </div>
 
-          {/* NAV */}
           <div className="p-2 space-y-1">
 
             {menu.map((item) => (
@@ -82,17 +93,13 @@ function App() {
                 className={`flex items-center gap-3 w-full px-3 py-2 rounded-xl transition
                   ${
                     active === item.id
-                      ? "bg-black text-white"
-                      : "hover:bg-gray-100 text-gray-700"
+                      ? "bg-black text-white dark:bg-white dark:text-black"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-700"
                   }
                 `}
               >
                 {item.icon}
-                {sidebarOpen && (
-                  <span className="text-sm font-medium">
-                    {item.label}
-                  </span>
-                )}
+                {sidebarOpen && <span>{item.label}</span>}
               </button>
             ))}
 
@@ -100,9 +107,8 @@ function App() {
 
         </div>
 
-        {/* SIDEBAR FOOTER */}
-        <div className="p-4 text-xs text-gray-500 border-t">
-          API: <span className="text-green-600 font-medium">Online</span>
+        <div className="p-4 text-xs text-gray-500 dark:text-gray-300 border-t dark:border-gray-700">
+          API: <span className="text-green-500">Online</span>
         </div>
 
       </motion.div>
@@ -111,20 +117,24 @@ function App() {
       <div className="flex-1 flex flex-col">
 
         {/* TOPBAR */}
-        <div className="bg-white border-b px-6 py-4 flex justify-between items-center">
+        <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 px-6 py-4 flex justify-between items-center">
 
           <div>
-            <h1 className="font-semibold text-gray-800">
+            <h1 className="font-semibold">
               {menu.find((m) => m.id === active)?.label}
             </h1>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-300">
               Upload and analyze subtitle files
             </p>
           </div>
 
-          <div className="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-600">
-            Production Mode
-          </div>
+          {/* 🌙 TOGGLE */}
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="px-3 py-1 rounded-lg border dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          >
+            {darkMode ? "☀️ Light" : "🌙 Dark"}
+          </button>
 
         </div>
 
@@ -135,41 +145,29 @@ function App() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-              {/* MAIN PANEL */}
+              {/* MAIN */}
               <div className="lg:col-span-2 space-y-6">
 
-                <div className="bg-white border rounded-2xl p-6 shadow-sm">
+                <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl p-6">
 
                   <h2 className="font-semibold text-lg mb-1">
                     Upload Files
                   </h2>
 
-                  <p className="text-sm text-gray-500 mb-5">
+                  <p className="text-sm text-gray-500 dark:text-gray-300 mb-5">
                     Compare subtitle quality using AI scoring engine
                   </p>
 
-                  <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-black transition">
-
-                    <input
-                      type="file"
-                      multiple
-                      onChange={(e) => setFiles(Array.from(e.target.files))}
-                      className="hidden"
-                      id="fileInput"
-                    />
-
-                    <label
-                      htmlFor="fileInput"
-                      className="cursor-pointer text-sm text-gray-600"
-                    >
-                      Drop files here or click to upload
-                    </label>
-
-                  </div>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => setFiles(Array.from(e.target.files))}
+                    className="mb-4"
+                  />
 
                   <button
                     onClick={handleUpload}
-                    className="mt-5 w-full bg-black text-white py-2.5 rounded-xl hover:bg-gray-800 transition active:scale-95"
+                    className="w-full bg-black text-white dark:bg-white dark:text-black py-2.5 rounded-xl"
                   >
                     {loading ? "Processing..." : "Run Analysis"}
                   </button>
@@ -179,13 +177,9 @@ function App() {
                 {/* RESULTS */}
                 <AnimatePresence>
                   {data?.results && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="space-y-3"
-                    >
+                    <motion.div className="space-y-3">
 
-                      <div className="bg-green-50 border border-green-200 p-4 rounded-xl">
+                      <div className="bg-green-50 dark:bg-green-900 border p-4 rounded-xl">
                         🏆 Best File:{" "}
                         <span className="font-semibold">
                           {data.best_file}
@@ -195,10 +189,10 @@ function App() {
                       {data.results.map((r, i) => (
                         <div
                           key={i}
-                          className="bg-white border rounded-xl p-4 hover:shadow-md transition"
+                          className="bg-white dark:bg-gray-800 border dark:border-gray-700 p-4 rounded-xl"
                         >
                           <div className="font-semibold">{r.filename}</div>
-                          <div className="text-sm text-gray-500 mt-1">
+                          <div className="text-sm text-gray-500 dark:text-gray-300">
                             Score: {r.score}
                           </div>
                         </div>
@@ -210,26 +204,15 @@ function App() {
 
               </div>
 
-              {/* RIGHT PANEL */}
+              {/* RIGHT */}
               <div className="space-y-4">
 
-                <div className="bg-white border rounded-xl p-4">
-                  <h3 className="font-semibold">System Status</h3>
-                  <p className="text-green-600 text-sm">All systems operational</p>
+                <div className="bg-white dark:bg-gray-800 border rounded-xl p-4">
+                  System Status: <span className="text-green-500">OK</span>
                 </div>
 
-                <div className="bg-white border rounded-xl p-4">
-                  <h3 className="font-semibold">Usage</h3>
-                  <p className="text-sm text-gray-500">Free tier active</p>
-                </div>
-
-                <div className="bg-white border rounded-xl p-4">
-                  <h3 className="font-semibold">Coming Features</h3>
-                  <ul className="text-sm text-gray-500 mt-2 space-y-1">
-                    <li>AI insights</li>
-                    <li>Batch processing</li>
-                    <li>Export reports</li>
-                  </ul>
+                <div className="bg-white dark:bg-gray-800 border rounded-xl p-4">
+                  Usage: Free Tier
                 </div>
 
               </div>
@@ -240,36 +223,18 @@ function App() {
 
         </div>
 
-        {/* ================= FOOTER (YOUR LINKS ADDED) ================= */}
-        <div className="bg-white border-t p-4 flex justify-center gap-6 text-gray-500 text-3xl">
+        {/* FOOTER */}
+        <div className="bg-white dark:bg-gray-800 border-t p-4 flex justify-center gap-6 text-3xl">
 
-          {/* Instagram */}
-          <a
-            href="https://www.instagram.com/___john_snow_"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-pink-500 hover:scale-110 transition"
-          >
+          <a href="https://www.instagram.com/___john_snow_" target="_blank" className="hover:text-pink-500">
             <FaInstagram />
           </a>
 
-          {/* Twitter (X) */}
-          <a
-            href="https://x.com/JohnSnow320411"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-blue-500 hover:scale-110 transition"
-          >
+          <a href="https://x.com/JohnSnow320411" target="_blank" className="hover:text-blue-500">
             <FaTwitter />
           </a>
 
-          {/* GitHub */}
-          <a
-            href="https://github.com/John-snow09"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-black hover:scale-110 transition"
-          >
+          <a href="https://github.com/John-snow09" target="_blank" className="hover:text-black dark:hover:text-white">
             <FaGithub />
           </a>
 
