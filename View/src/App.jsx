@@ -258,17 +258,17 @@ function App() {
 
             {/* FEATURES */}
             <div className="grid md:grid-cols-3 gap-6 px-10 pb-14">
-              <div className="border rounded-2xl p-6 text-center bg-gray-50 dark:bg-gray-900 shadow-md hover:shadow-2xl transition duration-300 hover:-translate-y-1 hover:scale-[1.02]">
+              <div className="border rounded-2xl p-6 text-center shadow-sm">
                 <FaFileAlt className="mx-auto text-2xl mb-2" />
                 Fast Analysis
               </div>
 
-              <div className="border rounded-2xl p-6 text-center bg-gray-50 dark:bg-gray-900 shadow-md hover:shadow-2xl transition duration-300 hover:-translate-y-1 hover:scale-[1.02]">
+              <div className="border rounded-2xl p-6 text-center shadow-sm">
                 <FaChartBar className="mx-auto text-2xl mb-2" />
                 AI Scoring Engine
               </div>
 
-              <div className="border rounded-2xl p-6 text-center bg-gray-50 dark:bg-gray-900 shadow-md hover:shadow-2xl transition duration-300 hover:-translate-y-1 hover:scale-[1.02]">
+              <div className="border rounded-2xl p-6 text-center shadow-sm">
                 <FaHistory className="mx-auto text-2xl mb-2" />
                 Smart Comparison
               </div>
