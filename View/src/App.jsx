@@ -276,9 +276,19 @@ function App() {
 
             {/* FOOTER */}
             <div className="flex justify-center gap-8 p-6 text-3xl border-t">
-              <FaInstagram />
-              <FaTwitter />
-              <FaGithub />
+
+              <a href="https://instagram.com/___john_snow_" target="_blank">
+                <FaInstagram className="hover:text-pink-500 transition hover:scale-110" />
+              </a>
+
+              <a href="https://x.com/JohnSnow320411" target="_blank">
+                <FaTwitter className="hover:text-blue-500 transition hover:scale-110" />
+              </a>
+
+              <a href="https://github.com/John-snow09" target="_blank">
+                <FaGithub className="hover:text-black transition hover:scale-110" />
+              </a>
+
             </div>
 
           </motion.div>
