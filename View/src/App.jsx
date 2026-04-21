@@ -13,16 +13,17 @@ import {
 
 function App() {
   const [active, setActive] = useState("srt");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // ✅ SIDEBAR CLOSED BY DEFAULT
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [files, setFiles] = useState([]);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // 🌙 DARK MODE STATE
+  // 🌙 DARK MODE
   const [darkMode, setDarkMode] = useState(false);
 
-  // FIX: apply dark class properly
   useEffect(() => {
     const root = document.documentElement;
 
@@ -32,6 +33,20 @@ function App() {
       root.classList.remove("dark");
     }
   }, [darkMode]);
+
+  // 📱 AUTO CLOSE SIDEBAR ON MOBILE
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setSidebarOpen(false);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const API_BASE = "https://choose-your-sub.onrender.com";
 
@@ -71,11 +86,13 @@ function App() {
       {/* ================= SIDEBAR ================= */}
       <motion.div
         animate={{ width: sidebarOpen ? 260 : 72 }}
+        transition={{ type: "spring", stiffness: 260, damping: 25 }}
         className="bg-white dark:bg-gray-800 border-r dark:border-gray-700 flex flex-col justify-between"
       >
 
         <div>
 
+          {/* TOP */}
           <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
             <div className="text-xl">❄️</div>
 
@@ -84,6 +101,7 @@ function App() {
             </button>
           </div>
 
+          {/* NAV */}
           <div className="p-2 space-y-1">
 
             {menu.map((item) => (
@@ -124,7 +142,7 @@ function App() {
               {menu.find((m) => m.id === active)?.label}
             </h1>
             <p className="text-xs text-gray-500 dark:text-gray-300">
-              Upload and analyze subtitle files
+              Clean SaaS Dashboard
             </p>
           </div>
 
@@ -176,6 +194,7 @@ function App() {
 
                 {/* RESULTS */}
                 <AnimatePresence>
+
                   {data?.results && (
                     <motion.div className="space-y-3">
 
@@ -200,6 +219,7 @@ function App() {
 
                     </motion.div>
                   )}
+
                 </AnimatePresence>
 
               </div>
@@ -226,16 +246,16 @@ function App() {
         {/* FOOTER */}
         <div className="bg-white dark:bg-gray-800 border-t p-4 flex justify-center gap-6 text-3xl">
 
-          <a href="https://www.instagram.com/___john_snow_" target="_blank" className="hover:text-pink-500">
-            <FaInstagram />
+          <a href="https://www.instagram.com/___john_snow_" target="_blank">
+            <FaInstagram className="hover:text-pink-500 transition" />
           </a>
 
-          <a href="https://x.com/JohnSnow320411" target="_blank" className="hover:text-blue-500">
-            <FaTwitter />
+          <a href="https://x.com/JohnSnow320411" target="_blank">
+            <FaTwitter className="hover:text-blue-500 transition" />
           </a>
 
-          <a href="https://github.com/John-snow09" target="_blank" className="hover:text-black dark:hover:text-white">
-            <FaGithub />
+          <a href="https://github.com/John-snow09" target="_blank">
+            <FaGithub className="hover:text-black transition" />
           </a>
 
         </div>
