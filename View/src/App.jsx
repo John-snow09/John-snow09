@@ -59,22 +59,29 @@ function App() {
   const primaryBtn =
     "bg-black text-white dark:bg-white dark:text-black px-4 py-2 rounded-xl hover:scale-105 transition";
 
-  /* 🔐 PERSIST LOGIN (NEW FIX) */
+  /* 🔐 AUTO LOGIN AFTER VERIFY (NEW FIX) */
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        setUser({
-          name: currentUser.displayName,
-          email: currentUser.email,
-          photo: currentUser.photoURL,
-        });
-      } else {
-        setUser(null);
-      }
-    });
+  const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    if (currentUser) {
+      await currentUser.reload(); // ✅ important
 
-    return () => unsubscribe();
-  }, []);
+      if (!currentUser.emailVerified) {
+        setUser(null);
+        return;
+      }
+
+      setUser({
+        name: currentUser.displayName,
+        email: currentUser.email,
+        photo: currentUser.photoURL,
+      });
+    } else {
+      setUser(null);
+    }
+  });
+
+  return () => unsubscribe();
+}, []);
 
   /* 🚫 PROTECT DASHBOARD ROUTE */
 useEffect(() => {
@@ -122,26 +129,35 @@ const handleSignup = async () => {
   if (!email || !password) return showToast("Fill details");
 
   try {
-    const userCredential = await updateProfile(user, {
-  displayName: username
-});
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-    const user = userCredential.user;
+    const firebaseUser = userCredential.user;
 
-    // 🔥 SEND EMAIL VERIFICATION
-    await sendEmailVerification(user);
+    // ✅ set username (optional)
+    if (newUsername) {
+      await updateProfile(firebaseUser, {
+        displayName: newUsername,
+      });
+    }
 
-    setUser({
-      email: user.email,
-      name: user.displayName,
-      photo: user.photoURL,
-    });
+    // ✅ send verification email
+    await sendEmailVerification(firebaseUser);
+
+       showToast("📩 Verify your email before login. Check spam too!");
+
+    // ❗ IMPORTANT: DO NOT log user in yet
+    await signOut(auth);
 
     setShowLogin(false);
     setEmail("");
     setPassword("");
+    setNewUsername("");
 
-    showToast("Account created! Please verify your email 📩 before login.");
+    showToast("Account created! Verify your email 📩");
 
   } catch (err) {
     console.error(err);
@@ -167,39 +183,36 @@ const handleSignup = async () => {
       password
     );
 
-    const currentUser = userCredential.user;
+    const firebaseUser = userCredential.user;
 
-// 🔐 EMAIL VERIFICATION CHECK (PUT HERE)
-if (!currentUser.emailVerified) {
-  showToast("Please verify your email before logging in.");
-  return;
-}
+    // ❗ BLOCK if not verified
+    if (!firebaseUser.emailVerified) {
+      await signOut(auth);
+      showToast("Please verify your email before logging in ❗", "error");
+      return;
+    }
 
-setUser({
-  name: currentUser.displayName,
-  email: currentUser.email,
-  photo: currentUser.photoURL,
-});
+    setUser({
+      name: firebaseUser.displayName,
+      email: firebaseUser.email,
+      photo: firebaseUser.photoURL,
+    });
 
-setShowLogin(false);
-setEmail("");
-setPassword("");
+    setShowLogin(false);
+    setEmail("");
+    setPassword("");
 
   } catch (err) {
-  console.error("Firebase login error:", err.code, err.message);
+    console.error(err);
 
-  if (err.code === "auth/user-not-found") {
-    showToast("No user found. Please sign up first.");
-  } else if (err.code === "auth/wrong-password") {
-    showToast("Incorrect password");
-  } else if (err.code === "auth/invalid-email") {
-    showToast("Invalid email format");
-  } else if (err.code === "auth/invalid-credential") {
-    showToast("Wrong email or password");
-  } else {
-    showToast(err.message); // 👈 IMPORTANT: show real reason
+    if (err.code === "auth/user-not-found") {
+      showToast("No user found. Please sign up first.", "error");
+    } else if (err.code === "auth/wrong-password") {
+      showToast("Incorrect password", "error");
+    } else {
+      showToast("Login failed", "error");
+    }
   }
-}
 };
 
   /* 🔥 GOOGLE LOGIN */
@@ -277,6 +290,26 @@ const handleResendResetEmail = async () => {
     showToast(err.message);
   }
 };
+
+
+         // 👇 RESEND VERIFICATION
+  const handleResendVerification = async () => {
+    try {
+      if (!auth.currentUser) {
+        showToast("Please login first", "error");
+        return;
+      }
+
+      await sendEmailVerification(auth.currentUser);
+      showToast("Verification email resent 📩");
+
+    } catch (err) {
+      console.error(err);
+      showToast(err.message, "error");
+    }
+  };
+
+
 
       /*========Email Change========= */ 
       const handleEmailChange = async () => {
