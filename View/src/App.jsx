@@ -38,6 +38,8 @@ function App() {
 // menu | username | email
 
   /* ================= LOGIN STATES ================= */
+  const [showResend, setShowResend] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const [user, setUser] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
   const [email, setEmail] = useState("");
@@ -189,6 +191,8 @@ const handleSignup = async () => {
     if (!firebaseUser.emailVerified) {
       await signOut(auth);
       showToast("Please verify your email before logging in ❗", "error");
+      setShowResend(true); // 👈 show resend option
+
       return;
     }
 
@@ -294,21 +298,30 @@ const handleResendResetEmail = async () => {
 
          // 👇 RESEND VERIFICATION
   const handleResendVerification = async () => {
-    try {
-      if (!auth.currentUser) {
-        showToast("Please login first", "error");
-        return;
-      }
+  if (resendCooldown > 0) return;
 
-      await sendEmailVerification(auth.currentUser);
-      showToast("Verification email resent 📩");
+  try {
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-    } catch (err) {
-      console.error(err);
-      showToast(err.message, "error");
-    }
-  };
+    const firebaseUser = userCredential.user;
 
+    await sendEmailVerification(firebaseUser);
+
+    showToast("Verification email resent 📩");
+
+    setCooldown(30); // ⏱ start 30s cooldown
+
+    await signOut(auth);
+
+  } catch (err) {
+    console.error(err);
+    showToast("Failed to resend email", "error");
+  }
+};
 
 
       /*========Email Change========= */ 
@@ -482,24 +495,43 @@ const showToast = (message, type = "success") => {
             )}
 
 
-              {!resetMode && (
-           <button
-             onClick={handleForgotPassword}
-             className="text-xs text-blue-500 mt-2 hover:underline"
-           >
-             Forgot Password?
-           </button>
-              )}
+            <div className="flex flex-col gap-2 mt-2">
+  
+  {showResend && (
+    <button
+      onClick={handleResendVerification}
+      disabled={cooldown > 0}
+      className={`text-xs ${
+        cooldown > 0
+          ? "text-gray-400 cursor-not-allowed"
+          : "text-blue-500 hover:underline"
+      }`}
+    >
+      {cooldown > 0
+        ? `Resend in ${cooldown}s`
+        : "Resend Verification Email"}
+    </button>
+  )}
 
+  {!resetMode && (
+    <button
+      onClick={handleForgotPassword}
+      className="text-xs text-blue-500 hover:underline"
+    >
+      Forgot Password?
+    </button>
+  )}
 
-              {!resetMode && (
-              <button
-                onClick={handleSignup}
-                className="w-full bg-gray-700 text-white py-2 rounded-xl mt-2 hover:scale-105 transition"
-              >
-                Sign Up
-              </button>
-                )}
+</div>
+
+{!resetMode && (
+  <button
+    onClick={handleSignup}
+    className="w-full bg-gray-700 text-white py-2 rounded-xl mt-2 hover:scale-105 transition"
+  >
+    Sign Up
+  </button>
+)}
 
             </motion.div>
           </motion.div>
