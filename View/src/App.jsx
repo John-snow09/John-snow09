@@ -30,6 +30,7 @@ function App() {
   const [resetEmail, setResetEmail] = useState("");
   const [resetSent, setResetSent] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [toast, setToast] = useState(null);
 
   /* ================= LOGIN STATES ================= */
   const [user, setUser] = useState(null);
@@ -80,7 +81,7 @@ useEffect(() => {
 }, [cooldown]);  
 
   const handleUpload = async () => {
-    if (!files.length) return alert("Select files");
+    if (!files.length) return showToast("Select files");
 
     const formData = new FormData();
     files.forEach((f) => formData.append("files", f));
@@ -96,7 +97,7 @@ useEffect(() => {
       const result = await res.json();
       setData(result);
     } catch {
-      alert("Backend error");
+      showToast("Backend error");
     } finally {
       setLoading(false);
     }
@@ -104,7 +105,7 @@ useEffect(() => {
        
   /*SignUP*/
 const handleSignup = async () => {
-  if (!email || !password) return alert("Fill details");
+  if (!email || !password) return showToast("Fill details");
 
   try {
     const userCredential = await createUserWithEmailAndPassword(
@@ -128,24 +129,24 @@ const handleSignup = async () => {
     setEmail("");
     setPassword("");
 
-    alert("Account created! Please verify your email 📩 before login.");
+    showToast("Account created! Please verify your email 📩 before login.");
 
   } catch (err) {
     console.error(err);
 
     if (err.code === "auth/email-already-in-use") {
-      alert("User already exists. Please login.");
+      showToast("User already exists. Please login.");
     } else if (err.code === "auth/weak-password") {
-      alert("Password should be at least 6 characters");
+      showToast("Password should be at least 6 characters");
     } else {
-      alert(err.message);
+      showToast(err.message);
     }
   }
 };
 
   /*Email-Password login */
   const handleLogin = async () => {
-  if (!email || !password) return alert("Fill details");
+  if (!email || !password) return showToast("Fill details");
 
   try {
     const userCredential = await signInWithEmailAndPassword(
@@ -158,7 +159,7 @@ const handleSignup = async () => {
 
 // 🔐 EMAIL VERIFICATION CHECK (PUT HERE)
 if (!currentUser.emailVerified) {
-  alert("Please verify your email before logging in.");
+  showToast("Please verify your email before logging in.");
   return;
 }
 
@@ -176,15 +177,15 @@ setPassword("");
   console.error("Firebase login error:", err.code, err.message);
 
   if (err.code === "auth/user-not-found") {
-    alert("No user found. Please sign up first.");
+    showToast("No user found. Please sign up first.");
   } else if (err.code === "auth/wrong-password") {
-    alert("Incorrect password");
+    showToast("Incorrect password");
   } else if (err.code === "auth/invalid-email") {
-    alert("Invalid email format");
+    showToast("Invalid email format");
   } else if (err.code === "auth/invalid-credential") {
-    alert("Wrong email or password");
+    showToast("Wrong email or password");
   } else {
-    alert(err.message); // 👈 IMPORTANT: show real reason
+    showToast(err.message); // 👈 IMPORTANT: show real reason
   }
 }
 };
@@ -203,7 +204,7 @@ setPassword("");
       setShowLogin(false);
     } catch (err) {
       console.error(err);
-      alert("Google login failed");
+      showToast("Google login failed");
     }
   };
 
@@ -216,17 +217,17 @@ const handleForgotPassword = () => {
 
 /*RESET EMAIL FUNCTION*/
 const handleSendResetEmail = async () => {
-  if (!resetEmail) return alert("Enter email first");
+  if (!resetEmail) return showToast("Enter email first");
 
   try {
     await sendPasswordResetEmail(auth, resetEmail);
 
     setResetSent(true); // 🔥 LOCK STATE ENABLED
-    alert("Reset link sent to your email 📩");
+    showToast("Reset link sent to your email 📩");
 
   } catch (err) {
     console.error(err);
-    alert(err.message);
+    showToast(err.message);
   }
 };
 
@@ -238,12 +239,21 @@ const handleResendResetEmail = async () => {
     await sendPasswordResetEmail(auth, resetEmail);
 
     setCooldown(30); // 🔥 start 30s cooldown
-    alert("Reset link resent 📩");
+    showToast("Reset link resent 📩");
 
   } catch (err) {
     console.error(err);
-    alert(err.message);
+    showToast(err.message);
   }
+};
+
+    /*TOAST NOTIFICATION FUNCTION*/
+const showToast = (message, type = "success") => {
+  setToast({ message, type });
+
+  setTimeout(() => {
+    setToast(null);
+  }, 3000);
 };
 
   const menu = [
@@ -640,6 +650,17 @@ const handleResendResetEmail = async () => {
 )}
 
       </AnimatePresence>
+    
+        {/* ================= TOAST ================= */}
+    {toast && (
+  <div
+    className={`fixed top-5 left-1/2 transform -translate-x-1/2 z-[9999] px-4 py-2 rounded-xl text-white shadow-2xl transition ${
+      toast.type === "error" ? "bg-red-500" : "bg-green-500"
+    }`}
+  >
+    {toast.message}
+  </div>
+)}
     </div>
   );
 }
