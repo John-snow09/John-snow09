@@ -1,3 +1,6 @@
+
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
@@ -52,6 +55,13 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  /* 🚫 PROTECT DASHBOARD ROUTE */
+useEffect(() => {
+  if (page === "dashboard" && !user) {
+    setPage("landing");
+  }
+}, [page, user]);
+
   const handleUpload = async () => {
     if (!files.length) return alert("Select files");
 
@@ -74,15 +84,83 @@ function App() {
       setLoading(false);
     }
   };
+       
+  /*SignUP*/
+  const handleSignup = async () => {
+  if (!email || !password) return alert("Fill details");
 
-  const handleLogin = () => {
-    if (!email || !password) return alert("Fill details");
+  try {
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-    setUser({ email });
+    const user = userCredential.user;
+
+    setUser({
+      email: user.email,
+      name: user.displayName,
+      photo: user.photoURL,
+    });
+
     setShowLogin(false);
     setEmail("");
     setPassword("");
-  };
+
+    alert("Account created successfully 🚀");
+  } catch (err) {
+    console.error(err);
+
+    if (err.code === "auth/email-already-in-use") {
+      alert("User already exists. Please login.");
+    } else if (err.code === "auth/weak-password") {
+      alert("Password should be at least 6 characters");
+    } else {
+      alert(err.message);
+    }
+  }
+};
+
+  /*Email-Password login */
+  const handleLogin = async () => {
+  if (!email || !password) return alert("Fill details");
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
+    const currentUser = userCredential.user;
+
+    setUser({
+      name: currentUser.displayName,
+      email: currentUser.email,
+      photo: currentUser.photoURL,
+    });
+
+    setShowLogin(false);
+    setEmail("");
+    setPassword("");
+
+  } catch (err) {
+  console.error("Firebase login error:", err.code, err.message);
+
+  if (err.code === "auth/user-not-found") {
+    alert("No user found. Please sign up first.");
+  } else if (err.code === "auth/wrong-password") {
+    alert("Incorrect password");
+  } else if (err.code === "auth/invalid-email") {
+    alert("Invalid email format");
+  } else if (err.code === "auth/invalid-credential") {
+    alert("Wrong email or password");
+  } else {
+    alert(err.message); // 👈 IMPORTANT: show real reason
+  }
+}
+};
 
   /* 🔥 GOOGLE LOGIN */
   const handleGoogleLogin = async () => {
@@ -173,6 +251,15 @@ function App() {
               >
                 Sign In
               </button>
+
+
+              <button
+                onClick={handleSignup}
+                className="w-full bg-gray-700 text-white py-2 rounded-xl mt-2 hover:scale-105 transition"
+             >
+               Sign Up
+              </button>
+
             </motion.div>
           </motion.div>
         )}
@@ -247,7 +334,13 @@ function App() {
               </p>
 
               <button
-                onClick={() => setPage("dashboard")}
+                onClick={() => {
+                if (!user) {
+                        setShowLogin(true);
+                       } else {
+                     setPage("dashboard");
+                       }
+                      }}
                 className="bg-black text-white dark:bg-white dark:text-black px-8 py-3 rounded-xl flex items-center gap-2 hover:scale-105 transition"
               >
                 <FaRocket />
@@ -295,7 +388,7 @@ function App() {
         )}
 
         {/* DASHBOARD (UNCHANGED) */}
-        {page === "dashboard" && (
+        {page === "dashboard" && user && (
   <motion.div
     key="dashboard"
     initial={{ opacity: 0 }}
