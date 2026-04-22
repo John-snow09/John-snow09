@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { auth, provider } from "./firebase";
+import { updateProfile } from "firebase/auth";
+import { verifyBeforeUpdateEmail, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
 
 import {
   FaRocket,
@@ -31,12 +33,20 @@ function App() {
   const [resetSent, setResetSent] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [toast, setToast] = useState(null);
+  const [settingsTab, setSettingsTab] = useState("profile");
+  const [profileMode, setProfileMode] = useState("menu");
+// menu | username | email
 
   /* ================= LOGIN STATES ================= */
   const [user, setUser] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newUsername, setNewUsername] = useState("");
+  const [showProfile, setShowProfile] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [emailPassword, setEmailPassword] = useState("");
+  const [showEmailChange, setShowEmailChange] = useState(false);
 
   const API_BASE = "https://choose-your-sub.onrender.com";
 
@@ -44,6 +54,10 @@ function App() {
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
   }, [darkMode]);
+
+       // 👇 BETTER BUTTON SYSTEM
+  const primaryBtn =
+    "bg-black text-white dark:bg-white dark:text-black px-4 py-2 rounded-xl hover:scale-105 transition";
 
   /* 🔐 PERSIST LOGIN (NEW FIX) */
   useEffect(() => {
@@ -108,11 +122,9 @@ const handleSignup = async () => {
   if (!email || !password) return showToast("Fill details");
 
   try {
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
+    const userCredential = await updateProfile(user, {
+  displayName: username
+});
 
     const user = userCredential.user;
 
@@ -207,6 +219,25 @@ setPassword("");
       showToast("Google login failed");
     }
   };
+  
+         /* USERNAME FUNCTION */
+    const handleUpdateUsername = async () => {
+  try {
+    await updateProfile(auth.currentUser, {
+      displayName: newUsername,
+    });
+
+    setUser({
+      ...user,
+      name: newUsername,
+    });
+
+    showToast("Username updated ✅");
+    setShowProfile(false);
+   } catch (err) {
+    showToast(err.message, "error");
+   }
+  };      
 
   /* 🔁 FORGOT PASSWORD */
 const handleForgotPassword = () => {
@@ -246,6 +277,37 @@ const handleResendResetEmail = async () => {
     showToast(err.message);
   }
 };
+
+      /*========Email Change========= */ 
+      const handleEmailChange = async () => {
+  if (!newEmail || !emailPassword) {
+    return showToast("Fill all fields", "error");
+  }
+
+  try {
+    // STEP 1: re-authenticate user
+    const credential = EmailAuthProvider.credential(
+      auth.currentUser.email,
+      emailPassword
+    );
+
+    await reauthenticateWithCredential(auth.currentUser, credential);
+
+    // STEP 2: send verification to NEW email
+    await verifyBeforeUpdateEmail(auth.currentUser, newEmail);
+
+    showToast("Verification link sent to new email 📩");
+
+    setShowEmailChange(false);
+    setNewEmail("");
+    setEmailPassword("");
+
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+};
+
+
 
     /*TOAST NOTIFICATION FUNCTION*/
 const showToast = (message, type = "success") => {
@@ -441,7 +503,7 @@ const showToast = (message, type = "success") => {
                     {user.photo && (
                       <img src={user.photo} className="w-6 h-6 rounded-full" />
                     )}
-                    {user.email}
+                    {user.name || user.email}
                     <button
                       onClick={() => {
                         signOut(auth);
@@ -451,8 +513,17 @@ const showToast = (message, type = "success") => {
                     >
                       Logout
                     </button>
-                  </div>
-                )}
+
+                    <button
+                      onClick={() => setPage("settings")}
+                      className="text-sm text-blue-500 ml-2"
+                    >
+                      Settings
+                    </button>
+
+
+                    </div>
+                     )}
 
                 <button
                   onClick={() => setDarkMode(!darkMode)}
@@ -650,7 +721,126 @@ const showToast = (message, type = "success") => {
 )}
 
       </AnimatePresence>
-    
+
+
+         {/*================Setting page==========*/}
+         {page === "settings" && (
+  <div className="min-h-screen flex bg-white dark:bg-gray-950 text-black dark:text-white">
+
+    {/* SIDEBAR */}
+    <div className="w-64 border-r p-5 space-y-2">
+
+      <h2 className="font-bold text-lg mb-4">Settings</h2>
+
+      <button
+        onClick={() => setPage("landing")}   // or "landing" if you prefer
+        className="w-full text-left p-2 mb-4 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-sm text-gray-500"
+      >
+        ← Back to Home
+      </button>
+
+      <button
+  onClick={() => setSettingsTab("profile")}
+  className={`w-full text-left p-2 rounded transition ${
+    settingsTab === "profile"
+      ? "bg-black text-white dark:bg-white dark:text-black"
+      : "hover:bg-gray-100 dark:hover:bg-gray-800"
+  }`}
+>
+  Profile
+</button>
+
+<button
+  onClick={() => setSettingsTab("username")}
+  className={`w-full text-left p-2 rounded transition ${
+    settingsTab === "username"
+      ? "bg-black text-white dark:bg-white dark:text-black"
+      : "hover:bg-gray-100 dark:hover:bg-gray-800"
+  }`}
+>
+  Change Username
+</button>
+
+<button
+  onClick={() => setSettingsTab("email")}
+  className={`w-full text-left p-2 rounded transition ${
+    settingsTab === "email"
+      ? "bg-black text-white dark:bg-white dark:text-black"
+      : "hover:bg-gray-100 dark:hover:bg-gray-800"
+  }`}
+>
+  Change Email
+</button>
+
+
+    </div>
+
+    {/* MAIN CONTENT */}
+    <div className="flex-1 p-8">
+
+      {/* PROFILE VIEW */}
+      {settingsTab === "profile" && (
+  <div>
+    <h1 className="text-xl font-bold mb-4">Profile</h1>
+    <p><b>Name:</b> {user?.name}</p>
+    <p><b>Email:</b> {user?.email}</p>
+  </div>
+)}
+
+      {/* USERNAME UPDATE */}
+      {settingsTab === "username" && (
+  <div>
+    <h1 className="text-xl font-bold mb-4">Change Username</h1>
+
+    <input
+      className="w-full p-2 border rounded mb-3 bg-transparent"
+      value={newUsername}
+      onChange={(e) => setNewUsername(e.target.value)}
+    />
+
+    <button
+      onClick={handleUpdateUsername}
+      className={primaryBtn}
+    >
+      Save
+    </button>
+  </div>
+)}
+
+      {/* EMAIL UPDATE */}
+      {settingsTab === "email" && (
+  <div>
+    <h1 className="text-xl font-bold mb-4">Change Email</h1>
+
+    <input
+      className="w-full p-2 border rounded mb-2 bg-transparent"
+      placeholder="New email"
+      value={newEmail}
+      onChange={(e) => setNewEmail(e.target.value)}
+    />
+
+    <input
+      className="w-full p-2 border rounded mb-3 bg-transparent"
+      placeholder="Password"
+      type="password"
+      value={emailPassword}
+      onChange={(e) => setEmailPassword(e.target.value)}
+    />
+
+    <button
+      onClick={handleEmailChange}
+      className={primaryBtn}
+    >
+      Send Verification
+    </button>
+  </div>
+)}
+
+    </div>
+
+  </div>
+)}
+
         {/* ================= TOAST ================= */}
     {toast && (
   <div
