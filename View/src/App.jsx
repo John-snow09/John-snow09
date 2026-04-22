@@ -1,5 +1,6 @@
 
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { sendEmailVerification, sendPasswordResetEmail } from "firebase/auth";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -24,6 +25,10 @@ function App() {
   const [files, setFiles] = useState([]);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const [resetMode, setResetMode] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetSent, setResetSent] = useState(false);
 
   /* ================= LOGIN STATES ================= */
   const [user, setUser] = useState(null);
@@ -86,7 +91,7 @@ useEffect(() => {
   };
        
   /*SignUP*/
-  const handleSignup = async () => {
+const handleSignup = async () => {
   if (!email || !password) return alert("Fill details");
 
   try {
@@ -98,6 +103,9 @@ useEffect(() => {
 
     const user = userCredential.user;
 
+    // 🔥 SEND EMAIL VERIFICATION
+    await sendEmailVerification(user);
+
     setUser({
       email: user.email,
       name: user.displayName,
@@ -108,7 +116,8 @@ useEffect(() => {
     setEmail("");
     setPassword("");
 
-    alert("Account created successfully 🚀");
+    alert("Account created! Please verify your email 📩 before login.");
+
   } catch (err) {
     console.error(err);
 
@@ -135,15 +144,21 @@ useEffect(() => {
 
     const currentUser = userCredential.user;
 
-    setUser({
-      name: currentUser.displayName,
-      email: currentUser.email,
-      photo: currentUser.photoURL,
-    });
+// 🔐 EMAIL VERIFICATION CHECK (PUT HERE)
+if (!currentUser.emailVerified) {
+  alert("Please verify your email before logging in.");
+  return;
+}
 
-    setShowLogin(false);
-    setEmail("");
-    setPassword("");
+setUser({
+  name: currentUser.displayName,
+  email: currentUser.email,
+  photo: currentUser.photoURL,
+});
+
+setShowLogin(false);
+setEmail("");
+setPassword("");
 
   } catch (err) {
   console.error("Firebase login error:", err.code, err.message);
@@ -179,6 +194,38 @@ useEffect(() => {
       alert("Google login failed");
     }
   };
+
+  /* 🔁 FORGOT PASSWORD */
+const handleForgotPassword = () => {
+  setResetMode(true);
+  setResetEmail(email); // auto-fill if user already typed email
+  setResetSent(false);
+};
+
+/*RESET EMAIL FUNCTION*/
+const handleSendResetEmail = async () => {
+  if (!resetEmail) return alert("Enter email first");
+
+  try {
+    await sendPasswordResetEmail(auth, resetEmail);
+    setResetSent(true);
+    alert("Reset link sent to your email 📩");
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
+};
+
+/*RESEND Email FUNCTION*/
+const handleResendResetEmail = async () => {
+  try {
+    await sendPasswordResetEmail(auth, resetEmail);
+    alert("Reset link resent 📩");
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
+};
 
   const menu = [
     { id: "srt", label: "SRT Analyzer", icon: <FaFileAlt /> },
@@ -229,36 +276,94 @@ useEffect(() => {
                 <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
               </div>
 
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full mb-3 p-2 border rounded-lg bg-transparent"
-              />
+              {!resetMode && (
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full mb-3 p-2 border rounded-lg bg-transparent"
+             />
+               )}
 
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full mb-4 p-2 border rounded-lg bg-transparent"
-              />
+              {!resetMode && (
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full mb-4 p-2 border rounded-lg bg-transparent"
+             />
+              )}
+               
+             
+             {resetMode && (
+              <div className="flex flex-col gap-3 mt-2">
 
-              <button
-                onClick={handleLogin}
-                className="w-full bg-black text-white py-2 rounded-xl hover:scale-105 transition"
+             <p className="text-sm mb-2">Reset your password</p>
+
+             <input
+                 type="email"
+                 placeholder="Enter your email"
+                 value={resetEmail}
+                 onChange={(e) => setResetEmail(e.target.value)}
+               className="w-full mb-2 p-2 border rounded-lg bg-transparent"
+             />
+
+             <button
+               onClick={handleSendResetEmail}
+               className="w-full bg-blue-600 text-white py-2 rounded-xl hover:scale-105 transition"
               >
-                Sign In
-              </button>
+                Send Reset Link
+            </button>
+
+                 {resetSent && (
+            <button
+              onClick={handleResendResetEmail}
+              className="text-xs text-blue-500 mt-2 hover:underline"
+              >
+                 Resend Email
+            </button>
+              )}
+
+            <button
+              onClick={() => setResetMode(false)}
+              className="text-xs text-gray-500 mt-2 hover:underline"
+           >
+              Back to login
+           </button>
+
+          </div>
+                )}
+
+              {!resetMode && (
+           <button
+             onClick={handleLogin}
+             className="w-full bg-black text-white py-2 rounded-xl hover:scale-105 transition"
+           >
+              Sign In
+           </button>
+            )}
 
 
+              {!resetMode && (
+           <button
+             onClick={handleForgotPassword}
+             className="text-xs text-blue-500 mt-2 hover:underline"
+           >
+             Forgot Password?
+           </button>
+              )}
+
+
+              {!resetMode && (
               <button
                 onClick={handleSignup}
                 className="w-full bg-gray-700 text-white py-2 rounded-xl mt-2 hover:scale-105 transition"
-             >
-               Sign Up
+              >
+                Sign Up
               </button>
+                )}
 
             </motion.div>
           </motion.div>
