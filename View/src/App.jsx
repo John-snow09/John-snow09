@@ -29,6 +29,7 @@ function App() {
   const [resetMode, setResetMode] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetSent, setResetSent] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
 
   /* ================= LOGIN STATES ================= */
   const [user, setUser] = useState(null);
@@ -66,6 +67,17 @@ useEffect(() => {
     setPage("landing");
   }
 }, [page, user]);
+  
+  /*TIMER LOGIC*/  
+useEffect(() => {
+  if (cooldown <= 0) return;
+
+  const timer = setInterval(() => {
+    setCooldown((prev) => prev - 1);
+  }, 1000);
+
+  return () => clearInterval(timer);
+}, [cooldown]);  
 
   const handleUpload = async () => {
     if (!files.length) return alert("Select files");
@@ -208,8 +220,10 @@ const handleSendResetEmail = async () => {
 
   try {
     await sendPasswordResetEmail(auth, resetEmail);
-    setResetSent(true);
+
+    setResetSent(true); // 🔥 LOCK STATE ENABLED
     alert("Reset link sent to your email 📩");
+
   } catch (err) {
     console.error(err);
     alert(err.message);
@@ -218,9 +232,14 @@ const handleSendResetEmail = async () => {
 
 /*RESEND Email FUNCTION*/
 const handleResendResetEmail = async () => {
+  if (cooldown > 0) return;
+
   try {
     await sendPasswordResetEmail(auth, resetEmail);
+
+    setCooldown(30); // 🔥 start 30s cooldown
     alert("Reset link resent 📩");
+
   } catch (err) {
     console.error(err);
     alert(err.message);
@@ -312,17 +331,29 @@ const handleResendResetEmail = async () => {
 
              <button
                onClick={handleSendResetEmail}
-               className="w-full bg-blue-600 text-white py-2 rounded-xl hover:scale-105 transition"
+               disabled={resetSent}
+               className={`w-full py-2 rounded-xl transition ${
+               resetSent
+               ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 hover:scale-105 text-white"
+               }`}
               >
-                Send Reset Link
-            </button>
+               {resetSent ? "Link Sent ✔" : "Send Reset Link"}
+             </button>
 
                  {resetSent && (
             <button
               onClick={handleResendResetEmail}
-              className="text-xs text-blue-500 mt-2 hover:underline"
+              disabled={cooldown > 0}
+              className={`text-xs mt-2 hover:underline ${
+              cooldown > 0
+             ? "text-gray-400 cursor-not-allowed"
+             : "text-blue-500"
+               }`}
               >
-                 Resend Email
+             {cooldown > 0
+             ? `Resend in ${cooldown}s`
+             : "Resend Email"}
             </button>
               )}
 
