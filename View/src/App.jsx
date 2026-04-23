@@ -711,7 +711,7 @@ const showToast = (message, type = "success") => {
            }}
            className="text-[10px] font-bold text-red-500 uppercase px-1 hover:text-red-700 transition-colors"
          >
-           Logout
+           out
          </button>
         </div>
       </>
