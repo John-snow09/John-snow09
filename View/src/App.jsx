@@ -671,71 +671,55 @@ const showToast = (message, type = "success") => {
             className="min-h-screen flex flex-col"
           >
             {/* NAV */}
-            <div className="flex justify-between items-center px-6 py-5">
-              <h1 className="font-bold text-xl">❄️ Snowlabs</h1>
+<div className="flex justify-between items-center px-4 py-5 md:px-6">
+  <h1 className="font-bold text-lg md:text-xl flex-shrink-0">❄️ Snowlabs</h1>
 
-              <div className="flex gap-3 items-center">
+  <div className="flex gap-2 sm:gap-3 items-center">
+    {!user ? (
+      <button
+        onClick={() => setShowLogin(true)}
+        className="px-4 py-2 text-sm rounded-xl border hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+      >
+        Login
+      </button>
+    ) : (
+      <>
+        {/* Settings Icon */}
+        <button
+          onClick={() => setPage("settings")}
+          className={`p-2 rounded-full transition-all flex-shrink-0 ${
+            page === "settings" 
+              ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30" 
+              : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+          }`}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
 
-                {!user ? (
-                  <button
-                    onClick={() => setShowLogin(true)}
-                    className="px-4 py-2 text-sm rounded-xl border hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-                  >
-                    Login
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-2 text-sm">
-                    {user.photo && (
-                      <img src={user.photo} className="w-6 h-6 rounded-full" />
-                    )}
-                    {user.name || user.email}
-                    <button
-                      onClick={() => {
-                        signOut(auth);
-                        setUser(null);
-                      }}
-                      className="text-xs ml-2 text-red-500"
-                    >
-                      Logout
-                    </button>
+        {/* User Info (Minimalist on Mobile) */}
+        <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 pl-1 pr-2 py-1 rounded-full border dark:border-gray-700">
+          {user.photo && (
+            <img src={user.photo} className="w-6 h-6 rounded-full" referrerPolicy="no-referrer" />
+          )}
+          <button
+            onClick={() => { signOut(auth); setUser(null); }}
+            className="text-[10px] font-bold text-red-500 uppercase px-1"
+          >
+            Out
+          </button>
+        </div>
+      </>
+    )}
 
-                    <button 
-                      onClick={() => setPage("settings")} // Changed from setActive to setPage
-                      className={`p-2 rounded-xl transition-all ${
-                      page === "settings" // Changed from active to page
-                      ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30" 
-                      : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500"
-                        }`}
-                       title="Settings"
-                     >
-                       <svg 
-                          xmlns="http://www.w3.org/2000/svg" 
-                          width="20" 
-                          height="20" 
-                          viewBox="0 0 24 24" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          strokeWidth="2" 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round"
-                    >
-                      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-                      <circle cx="12" cy="12" r="3"/>
-                      </svg>
-                    </button>
-
-                    </div>
-                     )}
-
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className="text-sm border px-3 py-1 rounded-lg"
-                >
-                  {darkMode ? "☀️ Light" : "🌙 Dark"}
-                </button>
-
-              </div>
-            </div>
+    {/* Theme Toggle (Icon only to save space) */}
+    <button
+      onClick={() => setDarkMode(!darkMode)}
+      className="p-2 rounded-full border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex-shrink-0"
+    >
+      {darkMode ? "☀️" : "🌙"}
+    </button>
+  </div>
+</div>
 
             {/* HERO */}
             <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
