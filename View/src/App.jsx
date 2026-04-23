@@ -1,4 +1,14 @@
 
+import { db } from "./firebase"; // Make sure you exported 'db' in firebase.js!
+import { 
+  collection, 
+  addDoc, 
+  query, 
+  where, 
+  getDocs, 
+  orderBy, 
+  serverTimestamp 
+} from "firebase/firestore";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { sendEmailVerification, sendPasswordResetEmail } from "firebase/auth";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -34,6 +44,9 @@ function App() {
   const [cooldown, setCooldown] = useState(0);
   const [toast, setToast] = useState(null);
   const [settingsTab, setSettingsTab] = useState("profile");
+  const [historyData, setHistoryData] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [profileMode, setProfileMode] = useState("menu");
 // menu | username | email
 
@@ -119,12 +132,119 @@ useEffect(() => {
 
       const result = await res.json();
       setData(result);
+
+      // --- NEW: Save to History ---
+      if (result && auth.currentUser) {
+        try {
+          await addDoc(collection(db, "history"), {
+            userId: auth.currentUser.uid,
+            best_file: result.best_file,
+            mode: result.mode || "Standard", // Defaulting to Standard if mode isn't in result
+            results: result.results.map(r => ({
+              filename: r.filename,
+              score: r.score
+            })),
+            timestamp: serverTimestamp()
+          });
+          console.log("Analysis saved to history!");
+        } catch (dbError) {
+          console.error("Firestore Save Error:", dbError);
+        }
+      }
+      // --- END NEW SECTION ---
+
     } catch {
       showToast("Backend error");
     } finally {
       setLoading(false);
     }
   };
+
+  
+       /*Fetch History*/  
+  const fetchHistory = async () => {
+  if (!user) return;
+  setLoading(true); // Reuse your loading state
+  try {
+    const q = query(
+      collection(db, "history"),
+      where("userId", "==", auth.currentUser.uid),
+      orderBy("timestamp", "desc")
+    );
+    const querySnapshot = await getDocs(q);
+    const docs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setHistoryData(docs);
+  } catch (error) {
+    // This will print the EXACT reason to your console
+    console.error("FIREBASE FETCH ERROR:", error.code, error.message); 
+    showToast("Failed to load history", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+         /*history to load automatically*/
+useEffect(() => {
+  if (active === "history") { // ✅ Matches your existing state
+    fetchHistory();
+  }
+}, [active]); // ✅ Matches your existing state
+
+
+
+// Toggle individual selection in History
+const toggleSelect = (id) => {
+  setSelectedIds(prev => 
+    prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+  );
+};
+
+// Toggle all
+const toggleSelectAll = () => {
+  if (selectedIds.length === historyData.length) {
+    setSelectedIds([]);
+  } else {
+    setSelectedIds(historyData.map(item => item.id));
+  }
+};
+
+// Delete selected items
+const deleteSelected = async () => {
+  if (selectedIds.length === 0) return;
+  if (!window.confirm(`Delete ${selectedIds.length} items?`)) return;
+
+  setLoading(true);
+  try {
+    const { deleteDoc, doc } = await import("firebase/firestore");
+    
+    // Delete all selected docs from Firestore
+    await Promise.all(
+      selectedIds.map(id => deleteDoc(doc(db, "history", id)))
+    );
+
+    showToast(`Deleted ${selectedIds.length} items`);
+    setSelectedIds([]); // Clear selection
+    fetchHistory(); // Refresh list
+  } catch (error) {
+    console.error("Delete Error:", error);
+    showToast("Failed to delete", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+       //Search history
+const filteredHistory = historyData.filter(item => {
+  const query = searchQuery.toLowerCase();
+  // Searches both the winning file name AND any file in the list
+  return (
+    item.best_file.toLowerCase().includes(query) ||
+    item.results.some(r => r.filename.toLowerCase().includes(query))
+  );
+});
+
        
   /*SignUP*/
 const handleSignup = async () => {
@@ -774,11 +894,126 @@ const showToast = (message, type = "success") => {
         </div>
       )}
 
-      {active === "history" && (
-        <div className="border rounded-2xl p-6">
-          No history yet
+
+       {/*History load from Srt analyzer*/}
+{active === "history" && (
+  <div className="p-6 h-full flex flex-col">
+    {/* HEADER SECTION: Sticky at the top */}
+    <div className="bg-white dark:bg-gray-900 sticky top-0 z-10 pb-4 border-b dark:border-gray-800">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-4">
+          <div>
+            <h2 className="text-2xl font-bold">Past Analyses</h2>
+            <p className="text-sm text-gray-500">{historyData.length} records</p>
+          </div>
+          
+          {/* SELECT TOGGLE */}
+          {historyData.length > 0 && (
+            <button 
+              onClick={toggleSelectAll} 
+              className="ml-4 px-4 py-2 text-sm font-semibold rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              {selectedIds.length === historyData.length ? "Deselect All" : "Select All"}
+            </button>
+          )}
+        </div>
+        
+        <div className="flex gap-3 items-center">
+          {/* DELETE BUTTON */}
+          <div className="w-32 flex justify-end">
+            {selectedIds.length > 0 && (
+              <button 
+                onClick={deleteSelected} 
+                className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-lg shadow-red-500/20 transition-all animate-in fade-in zoom-in duration-200"
+              >
+                Delete ({selectedIds.length})
+              </button>
+            )}
+          </div>
+
+          <button 
+            onClick={fetchHistory} 
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+            title="Refresh"
+          >
+            🔄
+          </button>
+        </div>
+      </div>
+
+      {/* SEARCH INPUT FIELD */}
+      <div className="relative">
+        <input 
+          type="text"
+          placeholder="Search by filename..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-blue-500 rounded-xl outline-none transition-all text-sm"
+        />
+        <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+        {searchQuery && (
+          <button 
+            onClick={() => setSearchQuery("")}
+            className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+    </div>
+
+    {/* SCROLLABLE GRID AREA */}
+    <div className="flex-1 overflow-y-auto pr-2 mt-4 custom-scrollbar" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+      {filteredHistory.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredHistory.map((item) => (
+            <div 
+              key={item.id} 
+              onClick={() => toggleSelect(item.id)}
+              className={`relative p-4 border-2 rounded-2xl cursor-pointer transition-all duration-200 group ${
+                selectedIds.includes(item.id) 
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-md' 
+                  : 'border-transparent bg-gray-50 dark:bg-gray-800/50 hover:border-gray-200 dark:hover:border-gray-700'
+              }`}
+            >
+              <div className="absolute top-3 right-3">
+                <input 
+                  type="checkbox" 
+                  checked={selectedIds.includes(item.id)}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    toggleSelect(item.id);
+                  }}
+                  className="w-5 h-5 rounded-full border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+              </div>
+
+              <div className="mb-3">
+                <div className="text-xs text-gray-400 mb-1">
+                   {item.timestamp?.toDate().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </div>
+                <div className="font-bold text-green-600 dark:text-green-400 truncate pr-6">
+                  🏆 {item.best_file}
+                </div>
+              </div>
+
+              <div className="text-xs text-gray-500 line-clamp-2">
+                <span className="font-semibold">Analyzed:</span> {item.results.map(r => r.filename).join(", ")}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+          <span className="text-4xl mb-4">{searchQuery ? "🕵️‍♂️" : "📂"}</span>
+          <p className="italic">
+            {searchQuery ? `No results found for "${searchQuery}"` : "No history found yet."}
+          </p>
         </div>
       )}
+    </div>
+  </div>
+)}
 
     </div>
 
@@ -905,6 +1140,7 @@ const showToast = (message, type = "success") => {
 
   </div>
 )}
+
 
         {/* ================= TOAST ================= */}
     {toast && (
