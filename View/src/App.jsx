@@ -702,11 +702,17 @@ const showToast = (message, type = "success") => {
             <img src={user.photo} className="w-6 h-6 rounded-full" referrerPolicy="no-referrer" />
           )}
           <button
-            onClick={() => { signOut(auth); setUser(null); }}
-            className="text-[10px] font-bold text-red-500 uppercase px-1"
-          >
-            Out
-          </button>
+            onClick={() => {
+            // Add the confirmation check here
+            if (window.confirm("Are you sure you want to log out?")) {
+            signOut(auth);
+            setUser(null);
+            }
+           }}
+           className="text-[10px] font-bold text-red-500 uppercase px-1 hover:text-red-700 transition-colors"
+         >
+           Logout
+         </button>
         </div>
       </>
     )}
