@@ -994,14 +994,16 @@ const showToast = (message, type = "success") => {
 )}
 
 
-       {/*History load from Srt analyzer*/}
+       {/* 🟧 HISTORY SECTION (CLEAN ORANGE THEME) */}
 {active === "history" && (
   <div className="p-6 h-full flex flex-col">
     {/* HEADER SECTION: Sticky at the top */}
     <div className="bg-white dark:bg-gray-900 sticky top-0 z-10 pb-4 border-b dark:border-gray-800">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-4">
-          <FaHistory size={20} className="text-orange-500 dark:text-orange-400 drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]" />
+          <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-2xl shadow-sm border border-orange-200 dark:border-orange-800/50">
+            <FaHistory size={22} className="text-orange-600 dark:text-orange-400 drop-shadow-[0_0_8px_rgba(249,115,22,0.4)]" />
+          </div>
           <div>
             <h2 className="text-2xl font-bold">Past Analyses</h2>
             <p className="text-sm text-gray-500">{historyData.length} records</p>
@@ -1011,7 +1013,7 @@ const showToast = (message, type = "success") => {
           {historyData.length > 0 && (
             <button 
               onClick={toggleSelectAll} 
-              className="ml-4 px-4 py-2 text-sm font-semibold rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/20 transition-colors"
+              className="ml-4 px-4 py-2 text-sm font-semibold rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
             >
               {selectedIds.length === historyData.length ? "Deselect All" : "Select All"}
             </button>
@@ -1033,7 +1035,7 @@ const showToast = (message, type = "success") => {
 
           <button 
             onClick={fetchHistory} 
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+            className="p-2 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-full transition-colors text-orange-600 dark:text-orange-400"
             title="Refresh"
           >
             🔄
@@ -1048,13 +1050,13 @@ const showToast = (message, type = "success") => {
           placeholder="Search by filename..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-blue-500 rounded-xl outline-none transition-all text-sm"
+          className="w-full pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-orange-500 rounded-xl outline-none transition-all text-sm"
         />
         <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
         {searchQuery && (
           <button 
             onClick={() => setSearchQuery("")}
-            className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+            className="absolute right-3 top-2.5 text-gray-400 hover:text-orange-600"
           >
             ✕
           </button>
@@ -1072,8 +1074,8 @@ const showToast = (message, type = "success") => {
               onClick={() => toggleSelect(item.id)}
               className={`relative p-4 border-2 rounded-2xl cursor-pointer transition-all duration-200 group ${
                 selectedIds.includes(item.id) 
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-md' 
-                  : 'border-transparent bg-gray-50 dark:bg-gray-800/50 hover:border-gray-200 dark:hover:border-gray-700'
+                  ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 shadow-md' 
+                  : 'border-transparent bg-gray-50 dark:bg-gray-800/50 hover:border-orange-200 dark:hover:border-orange-900/30'
               }`}
             >
               <div className="absolute top-3 right-3">
@@ -1084,7 +1086,7 @@ const showToast = (message, type = "success") => {
                     e.stopPropagation();
                     toggleSelect(item.id);
                   }}
-                  className="w-5 h-5 rounded-full border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  className="w-5 h-5 rounded-full border-gray-300 text-orange-600 focus:ring-orange-500 cursor-pointer"
                 />
               </div>
 
@@ -1098,7 +1100,7 @@ const showToast = (message, type = "success") => {
               </div>
 
               <div className="text-xs text-gray-500 line-clamp-2">
-                <span className="font-semibold">Analyzed:</span> {item.results.map(r => r.filename).join(", ")}
+                <span className="font-semibold text-gray-400">Analyzed:</span> {item.results.map(r => r.filename).join(", ")}
               </div>
             </div>
           ))}
