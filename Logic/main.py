@@ -10,7 +10,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://choose-your-sub-1.onrender.com",
+        "https://snowlabs.onrender.com",
         "https://choose-your-sub.onrender.com"
     ],
     allow_credentials=True,
