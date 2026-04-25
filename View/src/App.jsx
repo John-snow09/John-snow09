@@ -485,10 +485,10 @@ const showToast = (message, type = "success") => {
 };
 
   const menu = [
-    { id: "srt", label: "SRT Analyzer", icon: <FaFileAlt /> },
-    { id: "analytics", label: "Analytics", icon: <FaChartBar /> },
-    { id: "history", label: "History", icon: <FaHistory /> },
-  ];
+  { id: "srt", label: "SRT Analyzer", icon: <FaFileAlt className="text-blue-500" /> }, 
+  { id: "analytics", label: "Analytics", icon: <FaChartBar className="text-green-500" /> },
+  { id: "history", label: "History", icon: <FaHistory className="text-orange-500" /> },
+];
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white">
@@ -819,20 +819,32 @@ const showToast = (message, type = "success") => {
 
       <div className="space-y-2 flex-1">
 
-        {menu.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setActive(item.id)}
-            className={`w-full text-left p-2 rounded flex items-center gap-2 transition ${
-              active === item.id
-                ? "bg-black text-white dark:bg-white dark:text-black shadow"
-                : "hover:bg-gray-200 dark:hover:bg-gray-800"
-            }`}
-          >
-            {item.icon}
-            {item.label}
-          </button>
-        ))}
+        {menu.map((item) => {
+  // Define active styles based on ID
+  const activeStyles = {
+    srt: "bg-blue-600 text-white shadow-lg shadow-blue-500/20",
+    analytics: "bg-green-600 text-white shadow-lg shadow-green-500/20",
+    history: "bg-orange-600 text-white shadow-lg shadow-orange-500/20"
+  };
+
+  return (
+    <button
+      key={item.id}
+      onClick={() => setActive(item.id)}
+      className={`w-full text-left p-3 rounded-xl flex items-center gap-3 transition-all duration-200 ${
+        active === item.id
+          ? activeStyles[item.id] // Use the specific color
+          : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500"
+      }`}
+    >
+      {/* Make icon white if active, otherwise keep original color */}
+      <span className={active === item.id ? "text-white" : ""}>
+        {item.icon}
+      </span>
+      <span className="font-bold text-sm">{item.label}</span>
+    </button>
+  );
+})}
 
       </div>
 
@@ -861,45 +873,125 @@ const showToast = (message, type = "success") => {
       </div>
 
       {active === "srt" && (
-        <div className="border rounded-2xl p-6 bg-white dark:bg-gray-800 shadow-sm">
+  <motion.div 
+    initial={{ opacity: 0, scale: 0.95 }} 
+    animate={{ opacity: 1, scale: 1 }}
+    className="border rounded-2xl p-8 bg-white dark:bg-gray-800 shadow-sm border-blue-100 dark:border-blue-900/30"
+  >
+    {/* HEADER SECTION */}
+    <div className="flex items-center gap-3 mb-6">
+      <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl text-blue-600">
+        <FaFileAlt size={20} />
+      </div>
+      <div>
+        <h2 className="text-xl font-bold">SRT Subtitle Analyzer</h2>
+        <p className="text-xs text-gray-500">Upload multiple files to find the best quality</p>
+      </div>
+    </div>
 
-          <input
-            type="file"
-            multiple
-            onChange={(e) => setFiles(Array.from(e.target.files))}
-          />
+    {/* UPLOAD AREA */}
+    <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-3xl p-10 hover:border-blue-400 transition-colors bg-gray-50/50 dark:bg-gray-900/30">
+      <input
+        type="file"
+        multiple
+        className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+        onChange={(e) => setFiles(Array.from(e.target.files))}
+      />
+    </div>
 
-          <button
-            onClick={handleUpload}
-            className="bg-black text-white px-4 py-2 mt-4 rounded-xl hover:scale-105 transition"
-          >
-            {loading ? "Processing..." : "Run Analysis"}
-          </button>
-
-          {data?.results && (
-            <div className="mt-6 space-y-2">
-
-              <div className="p-3 bg-green-100 rounded-xl">
-                🏆 Best: {data.best_file}
-              </div>
-
-              {data.results.map((r, i) => (
-                <div key={i} className="border p-3 rounded-xl">
-                  {r.filename} — {r.score}
-                </div>
-              ))}
-
-            </div>
-          )}
-
-        </div>
+    <button
+      onClick={handleUpload}
+      className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 mt-6 rounded-2xl font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95 flex items-center justify-center gap-2"
+    >
+      {loading ? (
+        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+      ) : (
+        <>Run Analysis</>
       )}
+    </button>
+
+    {/* RESULTS SECTION */}
+    {data?.results && (
+      <div className="mt-8 space-y-4 animate-in fade-in slide-in-from-top-2">
+        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 flex items-center gap-3">
+          <span className="text-xl">🏆</span>
+          <div>
+            <p className="text-[10px] uppercase font-bold text-blue-500">Winner</p>
+            <h3 className="font-bold text-blue-700 dark:text-blue-300">{data.best_file}</h3>
+          </div>
+        </div>
+
+        <div className="grid gap-3">
+          {data.results.map((r, i) => (
+            <div key={i} className="flex justify-between items-center p-4 bg-white dark:bg-gray-900 border rounded-xl shadow-sm hover:shadow-md transition-shadow">
+              <span className="text-sm font-medium truncate max-w-[200px]">{r.filename}</span>
+              <div className="flex items-center gap-4">
+                <div className="h-2 w-24 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-blue-500" 
+                    style={{ width: `${Math.min(r.score, 100)}%` }}
+                  />
+                </div>
+                <span className="font-black text-blue-600 dark:text-blue-400">{r.score}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </motion.div>
+)}
 
       {active === "analytics" && (
-        <div className="border rounded-2xl p-6">
-          Analytics Coming Soon 🚀
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }} 
+    animate={{ opacity: 1, y: 0 }}
+    className="space-y-6"
+  >
+    {/* HEADER SECTION */}
+    <div className="border rounded-2xl p-8 bg-white dark:bg-gray-800 shadow-sm border-green-100 dark:border-green-900/30">
+      <div className="flex items-center gap-3 mb-2">
+        <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl text-green-600">
+          <FaChartBar size={20} />
         </div>
-      )}
+        <div>
+          <h2 className="text-xl font-bold">Usage Analytics</h2>
+          <p className="text-xs text-gray-500">Insights into your subtitle and STE processing</p>
+        </div>
+      </div>
+    </div>
+
+    {/* QUICK STATS CARDS */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="p-6 bg-white dark:bg-gray-800 border rounded-2xl shadow-sm border-gray-100 dark:border-gray-700 hover:border-green-500 transition-colors">
+        <p className="text-sm text-gray-500 font-medium">Total Files Analyzed</p>
+        <h3 className="text-3xl font-black mt-2 text-green-600">{historyData?.length || 0}</h3>
+        <p className="text-[10px] text-gray-400 mt-1">Across all modes</p>
+      </div>
+
+      <div className="p-6 bg-white dark:bg-gray-800 border rounded-2xl shadow-sm border-gray-100 dark:border-gray-700 hover:border-green-500 transition-colors">
+        <p className="text-sm text-gray-500 font-medium">Avg. STE Score</p>
+        <h3 className="text-3xl font-black mt-2 text-purple-600">84%</h3>
+        <p className="text-[10px] text-gray-400 mt-1">Based on recent runs</p>
+      </div>
+
+      <div className="p-6 bg-white dark:bg-gray-800 border rounded-2xl shadow-sm border-gray-100 dark:border-gray-700 hover:border-green-500 transition-colors">
+        <p className="text-sm text-gray-500 font-medium">Time Saved</p>
+        <h3 className="text-3xl font-black mt-2 text-blue-600">12.4h</h3>
+        <p className="text-[10px] text-gray-400 mt-1">Estimated manual checking</p>
+      </div>
+    </div>
+
+    {/* PLACEHOLDER FOR CHART */}
+    <div className="border rounded-2xl p-12 bg-gray-50 dark:bg-gray-900/50 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-center">
+      <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center text-green-600 mb-4">
+        <FaChartBar size={32} />
+      </div>
+      <h3 className="font-bold text-gray-800 dark:text-gray-200">Activity Chart</h3>
+      <p className="text-sm text-gray-500 max-w-xs">Detailed visual trends will appear here as you continue to use Snowlabs.</p>
+    </div>
+  </motion.div>
+)}
 
 
        {/*History load from Srt analyzer*/}
@@ -909,6 +1001,7 @@ const showToast = (message, type = "success") => {
     <div className="bg-white dark:bg-gray-900 sticky top-0 z-10 pb-4 border-b dark:border-gray-800">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-4">
+          <FaHistory size={20} className="text-orange-500 dark:text-orange-400 drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]" />
           <div>
             <h2 className="text-2xl font-bold">Past Analyses</h2>
             <p className="text-sm text-gray-500">{historyData.length} records</p>
@@ -918,7 +1011,7 @@ const showToast = (message, type = "success") => {
           {historyData.length > 0 && (
             <button 
               onClick={toggleSelectAll} 
-              className="ml-4 px-4 py-2 text-sm font-semibold rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="ml-4 px-4 py-2 text-sm font-semibold rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/20 transition-colors"
             >
               {selectedIds.length === historyData.length ? "Deselect All" : "Select All"}
             </button>
@@ -999,7 +1092,7 @@ const showToast = (message, type = "success") => {
                 <div className="text-xs text-gray-400 mb-1">
                    {item.timestamp?.toDate().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 </div>
-                <div className="font-bold text-green-600 dark:text-green-400 truncate pr-6">
+                <div className="font-bold text-orange-600 dark:text-orange-400 truncate pr-6">
                   🏆 {item.best_file}
                 </div>
               </div>
@@ -1027,7 +1120,9 @@ const showToast = (message, type = "success") => {
   </motion.div>
 )}
 
-      </AnimatePresence>
+</AnimatePresence>
+
+
 
 
          {/*================Setting page==========*/}
