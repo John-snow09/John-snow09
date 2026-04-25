@@ -63,7 +63,7 @@ function App() {
   const [emailPassword, setEmailPassword] = useState("");
   const [showEmailChange, setShowEmailChange] = useState(false);
 
-  const API_BASE = "https://snowlabs.onrender.com";
+  const API_BASE = "https://choose-your-sub.onrender.com";
 
   /* 🌙 DARK MODE */
   useEffect(() => {
