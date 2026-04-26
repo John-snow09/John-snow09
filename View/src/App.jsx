@@ -1,4 +1,9 @@
 
+import Settings from './components/Settings';
+import Sidebar from './components/Sidebar';
+import SrtAnalyzer from './components/SrtAnalyzer';
+import Analytics from './components/Analytics';
+import History from './components/History';
 import { db } from "./firebase"; // Make sure you exported 'db' in firebase.js!
 import { 
   collection, 
@@ -687,13 +692,12 @@ const showToast = (message, type = "success") => {
         {/* Settings Icon */}
         <button
           onClick={() => setPage("settings")}
-          className={`p-2 rounded-full transition-all flex-shrink-0 ${
-            page === "settings" 
-              ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30" 
-              : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
-          }`}
+          className="p-2.5 rounded-xl border border-gray-200 dark:border-gray-800 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 transition-all flex items-center justify-center group"
+          title="Settings"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:rotate-90 transition-transform duration-500">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
         </button>
 
         {/* User Info (Minimalist on Mobile) */}
@@ -796,466 +800,161 @@ const showToast = (message, type = "success") => {
           </motion.div>
         )}
 
-        {/* DASHBOARD (UNCHANGED) */}
+        {/* ❄️ UNIFIED DASHBOARD */}
         {page === "dashboard" && user && (
-  <motion.div
-    key="dashboard"
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    className="flex min-h-screen"
-  >
+          <motion.div
+            key="dashboard"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex min-h-screen bg-white dark:bg-gray-950 transition-colors"
+          >
+            {/* 1. SIDEBAR SECTION */}
+            <aside className="w-64 bg-gray-50 dark:bg-gray-900 border-r dark:border-gray-800 p-4 flex flex-col fixed h-full">
+              <h1 className="font-black text-xl mb-6 flex items-center gap-2">
+                <span className="text-2xl">❄️</span> Snowlabs
+              </h1>
 
-    {/* SIDEBAR */}
-    <div className="w-64 bg-gray-100 dark:bg-gray-900 border-r p-4 flex flex-col">
+              <button
+                onClick={() => setPage("landing")}
+                className="text-left text-xs text-gray-400 mb-6 hover:text-blue-500 transition-colors font-bold uppercase tracking-widest"
+              >
+                ← Back to Home
+              </button>
 
-      <h1 className="font-bold mb-6">❄️ Snowlabs</h1>
+              <nav className="space-y-2 flex-1">
+                {menu.map((item) => {
+                  const activeStyles = {
+                    srt: "bg-blue-600 text-white shadow-lg shadow-blue-500/20",
+                    analytics: "bg-green-600 text-white shadow-lg shadow-green-500/20",
+                    history: "bg-orange-600 text-white shadow-lg shadow-orange-500/20"
+                  };
+                  const isActive = active === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActive(item.id)}
+                      className={`w-full text-left p-3 rounded-xl flex items-center gap-3 transition-all duration-200 ${
+                        isActive ? activeStyles[item.id] : "hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-500 font-medium"
+                      }`}
+                    >
+                      <span className={isActive ? "text-white" : "text-gray-400"}>{item.icon}</span>
+                      <span className="font-bold text-sm">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </nav>
 
-      <button
-        onClick={() => setPage("landing")}
-        className="text-xs text-gray-500 mb-5 hover:text-black dark:hover:text-white"
-      >
-        ← Back to Home
-      </button>
+              <div className="pt-4 border-t dark:border-gray-800 text-[10px] text-gray-500 font-mono">
+                v1.0.4 SAAS_PROD_STABLE
+              </div>
+            </aside>
 
-      <div className="space-y-2 flex-1">
-
-        {menu.map((item) => {
-  // Define active styles based on ID
-  const activeStyles = {
-    srt: "bg-blue-600 text-white shadow-lg shadow-blue-500/20",
-    analytics: "bg-green-600 text-white shadow-lg shadow-green-500/20",
-    history: "bg-orange-600 text-white shadow-lg shadow-orange-500/20"
-  };
-
-  return (
-    <button
-      key={item.id}
-      onClick={() => setActive(item.id)}
-      className={`w-full text-left p-3 rounded-xl flex items-center gap-3 transition-all duration-200 ${
-        active === item.id
-          ? activeStyles[item.id] // Use the specific color
-          : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500"
-      }`}
-    >
-      {/* Make icon white if active, otherwise keep original color */}
-      <span className={active === item.id ? "text-white" : ""}>
-        {item.icon}
-      </span>
-      <span className="font-bold text-sm">{item.label}</span>
-    </button>
-  );
-})}
-
-      </div>
-
-      <div className="text-xs text-gray-500">
-        v1.0 SaaS Mode
-      </div>
-
-    </div>
-
-    {/* MAIN */}
-    <div className="flex-1 p-8">
-
-      <div className="flex justify-between items-center mb-6">
-
-        <h1 className="text-xl font-bold">
+            {/* 2. MAIN CONTENT SECTION */}
+<main className="flex-1 ml-64 overflow-y-auto">
+  <div className="p-8 max-w-5xl mx-auto">
+    
+    {/* REPLACED HEADER SECTION */}
+    <header className="flex justify-between items-center mb-10">
+      <div>
+        <h1 className="text-3xl font-black tracking-tight text-gray-900 dark:text-white">
           {menu.find(m => m.id === active)?.label}
         </h1>
+        <p className="text-sm text-gray-500 mt-1 italic">Manage your SRT workflow</p>
+      </div>
 
+      <div className="flex items-center gap-3">
+        {/* 🚪 LOGOUT (NOW WITH ICON) */}
         <button
-          onClick={() => setPage("landing")}
-          className="text-sm text-gray-500 hover:text-black dark:hover:text-white"
+          onClick={() => {
+            if (window.confirm("Are you sure?")) {
+              signOut(auth);
+              setUser(null);
+              setPage("landing");
+            }
+          }}
+          className="flex items-center gap-2 px-4 py-2.5 text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl border border-transparent hover:border-red-200 transition-all group"
         >
-          Exit
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          Logout
         </button>
 
+        {/* ⚙️ SETTINGS ICON */}
+        <button
+          onClick={() => setPage("settings")}
+          className="p-2.5 rounded-xl border border-gray-200 dark:border-gray-800 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 transition-all flex items-center justify-center group"
+          title="Settings"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:rotate-90 transition-transform duration-500">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
       </div>
+    </header>
 
-      {active === "srt" && (
-  <motion.div 
-    initial={{ opacity: 0, scale: 0.95 }} 
-    animate={{ opacity: 1, scale: 1 }}
-    className="border rounded-2xl p-8 bg-white dark:bg-gray-800 shadow-sm border-blue-100 dark:border-blue-900/30"
-  >
-    {/* HEADER SECTION */}
-    <div className="flex items-center gap-3 mb-6">
-      <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl text-blue-600">
-        <FaFileAlt size={20} />
-      </div>
-      <div>
-        <h2 className="text-xl font-bold">SRT Subtitle Analyzer</h2>
-        <p className="text-xs text-gray-500">Upload multiple files to find the best quality</p>
-      </div>
-    </div>
+    {/* Module switcher continues below... */}
 
-    {/* UPLOAD AREA */}
-    <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-3xl p-10 hover:border-blue-400 transition-colors bg-gray-50/50 dark:bg-gray-900/30">
-      <input
-        type="file"
-        multiple
-        className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
-        onChange={(e) => setFiles(Array.from(e.target.files))}
-      />
-    </div>
+                <div className="min-h-[60vh]">
 
-    <button
-      onClick={handleUpload}
-      className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 mt-6 rounded-2xl font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95 flex items-center justify-center gap-2"
-    >
-      {loading ? (
-        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-      ) : (
-        <>Run Analysis</>
-      )}
-    </button>
+                  {/*===================SRT Analyzer=================*/}
+                  {active === "srt" && (
+                    <SrtAnalyzer setFiles={setFiles} handleUpload={handleUpload} loading={loading} data={data} />
+                  )}
+     
 
-    {/* RESULTS SECTION */}
-    {data?.results && (
-      <div className="mt-8 space-y-4 animate-in fade-in slide-in-from-top-2">
-        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 flex items-center gap-3">
-          <span className="text-xl">🏆</span>
-          <div>
-            <p className="text-[10px] uppercase font-bold text-blue-500">Winner</p>
-            <h3 className="font-bold text-blue-700 dark:text-blue-300">{data.best_file}</h3>
-          </div>
-        </div>
+                  {/*================Analytics================*/}
+                  {active === "analytics" && (
+                    <Analytics historyData={historyData} />
+                  )}
 
-        <div className="grid gap-3">
-          {data.results.map((r, i) => (
-            <div key={i} className="flex justify-between items-center p-4 bg-white dark:bg-gray-900 border rounded-xl shadow-sm hover:shadow-md transition-shadow">
-              <span className="text-sm font-medium truncate max-w-[200px]">{r.filename}</span>
-              <div className="flex items-center gap-4">
-                <div className="h-2 w-24 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-blue-500" 
-                    style={{ width: `${Math.min(r.score, 100)}%` }}
-                  />
+
+                  {/*==================History==================*/}
+                  {active === "history" && (
+                    <History 
+                      historyData={historyData}
+                      selectedIds={selectedIds}
+                      toggleSelect={toggleSelect}
+                      toggleSelectAll={toggleSelectAll}
+                      deleteSelected={deleteSelected}
+                      fetchHistory={fetchHistory}
+                      searchQuery={searchQuery}
+                      setSearchQuery={setSearchQuery}
+                      filteredHistory={filteredHistory}
+                    />
+                  )}
                 </div>
-                <span className="font-black text-blue-600 dark:text-blue-400">{r.score}</span>
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
-  </motion.div>
-)}
-
-      {active === "analytics" && (
-  <motion.div 
-    initial={{ opacity: 0, y: 20 }} 
-    animate={{ opacity: 1, y: 0 }}
-    className="space-y-6"
-  >
-    {/* HEADER SECTION */}
-    <div className="border rounded-2xl p-8 bg-white dark:bg-gray-800 shadow-sm border-green-100 dark:border-green-900/30">
-      <div className="flex items-center gap-3 mb-2">
-        <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl text-green-600">
-          <FaChartBar size={20} />
-        </div>
-        <div>
-          <h2 className="text-xl font-bold">Usage Analytics</h2>
-          <p className="text-xs text-gray-500">Insights into your subtitle and STE processing</p>
-        </div>
-      </div>
-    </div>
-
-    {/* QUICK STATS CARDS */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div className="p-6 bg-white dark:bg-gray-800 border rounded-2xl shadow-sm border-gray-100 dark:border-gray-700 hover:border-green-500 transition-colors">
-        <p className="text-sm text-gray-500 font-medium">Total Files Analyzed</p>
-        <h3 className="text-3xl font-black mt-2 text-green-600">{historyData?.length || 0}</h3>
-        <p className="text-[10px] text-gray-400 mt-1">Across all modes</p>
-      </div>
-
-      <div className="p-6 bg-white dark:bg-gray-800 border rounded-2xl shadow-sm border-gray-100 dark:border-gray-700 hover:border-green-500 transition-colors">
-        <p className="text-sm text-gray-500 font-medium">Avg. STE Score</p>
-        <h3 className="text-3xl font-black mt-2 text-purple-600">84%</h3>
-        <p className="text-[10px] text-gray-400 mt-1">Based on recent runs</p>
-      </div>
-
-      <div className="p-6 bg-white dark:bg-gray-800 border rounded-2xl shadow-sm border-gray-100 dark:border-gray-700 hover:border-green-500 transition-colors">
-        <p className="text-sm text-gray-500 font-medium">Time Saved</p>
-        <h3 className="text-3xl font-black mt-2 text-blue-600">12.4h</h3>
-        <p className="text-[10px] text-gray-400 mt-1">Estimated manual checking</p>
-      </div>
-    </div>
-
-    {/* PLACEHOLDER FOR CHART */}
-    <div className="border rounded-2xl p-12 bg-gray-50 dark:bg-gray-900/50 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-center">
-      <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center text-green-600 mb-4">
-        <FaChartBar size={32} />
-      </div>
-      <h3 className="font-bold text-gray-800 dark:text-gray-200">Activity Chart</h3>
-      <p className="text-sm text-gray-500 max-w-xs">Detailed visual trends will appear here as you continue to use Snowlabs.</p>
-    </div>
-  </motion.div>
-)}
-
-
-       {/* 🟧 HISTORY SECTION (CLEAN ORANGE THEME) */}
-{active === "history" && (
-  <div className="p-6 h-full flex flex-col">
-    {/* HEADER SECTION: Sticky at the top */}
-    <div className="bg-white dark:bg-gray-900 sticky top-0 z-10 pb-4 border-b dark:border-gray-800">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-2xl shadow-sm border border-orange-200 dark:border-orange-800/50">
-            <FaHistory size={22} className="text-orange-600 dark:text-orange-400 drop-shadow-[0_0_8px_rgba(249,115,22,0.4)]" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold">Past Analyses</h2>
-            <p className="text-sm text-gray-500">{historyData.length} records</p>
-          </div>
-          
-          {/* SELECT TOGGLE */}
-          {historyData.length > 0 && (
-            <button 
-              onClick={toggleSelectAll} 
-              className="ml-4 px-4 py-2 text-sm font-semibold rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
-            >
-              {selectedIds.length === historyData.length ? "Deselect All" : "Select All"}
-            </button>
-          )}
-        </div>
-        
-        <div className="flex gap-3 items-center">
-          {/* DELETE BUTTON */}
-          <div className="w-32 flex justify-end">
-            {selectedIds.length > 0 && (
-              <button 
-                onClick={deleteSelected} 
-                className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-lg shadow-red-500/20 transition-all animate-in fade-in zoom-in duration-200"
-              >
-                Delete ({selectedIds.length})
-              </button>
-            )}
-          </div>
-
-          <button 
-            onClick={fetchHistory} 
-            className="p-2 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-full transition-colors text-orange-600 dark:text-orange-400"
-            title="Refresh"
-          >
-            🔄
-          </button>
-        </div>
-      </div>
-
-      {/* SEARCH INPUT FIELD */}
-      <div className="relative">
-        <input 
-          type="text"
-          placeholder="Search by filename..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-orange-500 rounded-xl outline-none transition-all text-sm"
-        />
-        <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
-        {searchQuery && (
-          <button 
-            onClick={() => setSearchQuery("")}
-            className="absolute right-3 top-2.5 text-gray-400 hover:text-orange-600"
-          >
-            ✕
-          </button>
+            </main>
+          </motion.div>
         )}
-      </div>
-    </div>
+      </AnimatePresence>
 
-    {/* SCROLLABLE GRID AREA */}
-    <div className="flex-1 overflow-y-auto pr-2 mt-4 custom-scrollbar" style={{ maxHeight: 'calc(100vh - 280px)' }}>
-      {filteredHistory.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredHistory.map((item) => (
-            <div 
-              key={item.id} 
-              onClick={() => toggleSelect(item.id)}
-              className={`relative p-4 border-2 rounded-2xl cursor-pointer transition-all duration-200 group ${
-                selectedIds.includes(item.id) 
-                  ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 shadow-md' 
-                  : 'border-transparent bg-gray-50 dark:bg-gray-800/50 hover:border-orange-200 dark:hover:border-orange-900/30'
-              }`}
-            >
-              <div className="absolute top-3 right-3">
-                <input 
-                  type="checkbox" 
-                  checked={selectedIds.includes(item.id)}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    toggleSelect(item.id);
-                  }}
-                  className="w-5 h-5 rounded-full border-gray-300 text-orange-600 focus:ring-orange-500 cursor-pointer"
-                />
-              </div>
 
-              <div className="mb-3">
-                <div className="text-xs text-gray-400 mb-1">
-                   {item.timestamp?.toDate().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                </div>
-                <div className="font-bold text-orange-600 dark:text-orange-400 truncate pr-6">
-                  🏆 {item.best_file}
-                </div>
-              </div>
+        {/*======================Settings========================*/}
+      {page === "settings" && (
+  <Settings 
+    user={user}
+    setPage={setPage}
+    settingsTab={settingsTab}
+    setSettingsTab={setSettingsTab}
+    newUsername={newUsername}
+    setNewUsername={setNewUsername}
+    handleUpdateUsername={handleUpdateUsername}
+    newEmail={newEmail}
+    setNewEmail={setNewEmail}
+    emailPassword={emailPassword}
+    setEmailPassword={setEmailPassword}
+    handleEmailChange={handleEmailChange}
+  />
+)}
 
-              <div className="text-xs text-gray-500 line-clamp-2">
-                <span className="font-semibold text-gray-400">Analyzed:</span> {item.results.map(r => r.filename).join(", ")}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-          <span className="text-4xl mb-4">{searchQuery ? "🕵️‍♂️" : "📂"}</span>
-          <p className="italic">
-            {searchQuery ? `No results found for "${searchQuery}"` : "No history found yet."}
-          </p>
+      {/* ================= TOAST ================= */}
+      {toast && (
+        <div className={`fixed top-5 left-1/2 transform -translate-x-1/2 z-[9999] px-4 py-2 rounded-xl text-white shadow-2xl transition ${toast.type === "error" ? "bg-red-500" : "bg-green-500"}`}>
+          {toast.message}
         </div>
       )}
-    </div>
-  </div>
-)}
-
-    </div>
-
-  </motion.div>
-)}
-
-</AnimatePresence>
-
-
-
-
-         {/*================Setting page==========*/}
-         {page === "settings" && (
-  <div className="min-h-screen flex bg-white dark:bg-gray-950 text-black dark:text-white">
-
-    {/* SIDEBAR */}
-    <div className="w-64 border-r p-5 space-y-2">
-
-      <h2 className="font-bold text-lg mb-4">Settings</h2>
-
-      <button
-        onClick={() => setPage("landing")}   // or "landing" if you prefer
-        className="w-full text-left p-2 mb-4 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-sm text-gray-500"
-      >
-        ← Back to Home
-      </button>
-
-      <button
-  onClick={() => setSettingsTab("profile")}
-  className={`w-full text-left p-2 rounded transition ${
-    settingsTab === "profile"
-      ? "bg-black text-white dark:bg-white dark:text-black"
-      : "hover:bg-gray-100 dark:hover:bg-gray-800"
-  }`}
->
-  Profile
-</button>
-
-<button
-  onClick={() => setSettingsTab("username")}
-  className={`w-full text-left p-2 rounded transition ${
-    settingsTab === "username"
-      ? "bg-black text-white dark:bg-white dark:text-black"
-      : "hover:bg-gray-100 dark:hover:bg-gray-800"
-  }`}
->
-  Change Username
-</button>
-
-<button
-  onClick={() => setSettingsTab("email")}
-  className={`w-full text-left p-2 rounded transition ${
-    settingsTab === "email"
-      ? "bg-black text-white dark:bg-white dark:text-black"
-      : "hover:bg-gray-100 dark:hover:bg-gray-800"
-  }`}
->
-  Change Email
-</button>
-
-
-    </div>
-
-    {/* MAIN CONTENT */}
-    <div className="flex-1 p-8">
-
-      {/* PROFILE VIEW */}
-      {settingsTab === "profile" && (
-  <div>
-    <h1 className="text-xl font-bold mb-4">Profile</h1>
-    <p><b>Name:</b> {user?.name}</p>
-    <p><b>Email:</b> {user?.email}</p>
-  </div>
-)}
-
-      {/* USERNAME UPDATE */}
-      {settingsTab === "username" && (
-  <div>
-    <h1 className="text-xl font-bold mb-4">Change Username</h1>
-
-    <input
-      className="w-full p-2 border rounded mb-3 bg-transparent"
-      value={newUsername}
-      onChange={(e) => setNewUsername(e.target.value)}
-    />
-
-    <button
-      onClick={handleUpdateUsername}
-      className={primaryBtn}
-    >
-      Save
-    </button>
-  </div>
-)}
-
-      {/* EMAIL UPDATE */}
-      {settingsTab === "email" && (
-  <div>
-    <h1 className="text-xl font-bold mb-4">Change Email</h1>
-
-    <input
-      className="w-full p-2 border rounded mb-2 bg-transparent"
-      placeholder="New email"
-      value={newEmail}
-      onChange={(e) => setNewEmail(e.target.value)}
-    />
-
-    <input
-      className="w-full p-2 border rounded mb-3 bg-transparent"
-      placeholder="Password"
-      type="password"
-      value={emailPassword}
-      onChange={(e) => setEmailPassword(e.target.value)}
-    />
-
-    <button
-      onClick={handleEmailChange}
-      className={primaryBtn}
-    >
-      Send Verification
-    </button>
-  </div>
-)}
-
-    </div>
-
-  </div>
-)}
-
-
-        {/* ================= TOAST ================= */}
-    {toast && (
-  <div
-    className={`fixed top-5 left-1/2 transform -translate-x-1/2 z-[9999] px-4 py-2 rounded-xl text-white shadow-2xl transition ${
-      toast.type === "error" ? "bg-red-500" : "bg-green-500"
-    }`}
-  >
-    {toast.message}
-  </div>
-)}
     </div>
   );
 }
