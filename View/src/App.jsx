@@ -36,6 +36,7 @@ import {
 
 function App() {
   const [page, setPage] = useState("landing");
+  const [isFolded, setIsFolded] = useState(false);
   const [active, setActive] = useState("srt");
 
   const [darkMode, setDarkMode] = useState(false);
@@ -801,97 +802,108 @@ const showToast = (message, type = "success") => {
         )}
 
         {/* ❄️ UNIFIED DASHBOARD */}
-        {page === "dashboard" && user && (
-          <motion.div
-            key="dashboard"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex min-h-screen bg-white dark:bg-gray-950 transition-colors"
-          >
-            {/* 1. SIDEBAR SECTION */}
-            <aside className="w-64 bg-gray-50 dark:bg-gray-900 border-r dark:border-gray-800 p-4 flex flex-col fixed h-full">
-              <h1 className="font-black text-xl mb-6 flex items-center gap-2">
-                <span className="text-2xl">❄️</span> Snowlabs
-              </h1>
-
-              <button
-                onClick={() => setPage("landing")}
-                className="text-left text-xs text-gray-400 mb-6 hover:text-blue-500 transition-colors font-bold uppercase tracking-widest"
-              >
-                ← Back to Home
-              </button>
-
-              <nav className="space-y-2 flex-1">
-                {menu.map((item) => {
-                  const activeStyles = {
-                    srt: "bg-blue-600 text-white shadow-lg shadow-blue-500/20",
-                    analytics: "bg-green-600 text-white shadow-lg shadow-green-500/20",
-                    history: "bg-orange-600 text-white shadow-lg shadow-orange-500/20"
-                  };
-                  const isActive = active === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setActive(item.id)}
-                      className={`w-full text-left p-3 rounded-xl flex items-center gap-3 transition-all duration-200 ${
-                        isActive ? activeStyles[item.id] : "hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-500 font-medium"
-                      }`}
-                    >
-                      <span className={isActive ? "text-white" : "text-gray-400"}>{item.icon}</span>
-                      <span className="font-bold text-sm">{item.label}</span>
-                    </button>
-                  );
-                })}
-              </nav>
-
-              <div className="pt-4 border-t dark:border-gray-800 text-[10px] text-gray-500 font-mono">
-                v1.0.4 SAAS_PROD_STABLE
-              </div>
-            </aside>
-
-            {/* 2. MAIN CONTENT SECTION */}
-<main className="flex-1 ml-64 overflow-y-auto">
-  <div className="p-8 max-w-5xl mx-auto">
-    
-    {/* REPLACED HEADER SECTION */}
-    <header className="flex justify-between items-center mb-10">
-      <div>
-        <h1 className="text-3xl font-black tracking-tight text-gray-900 dark:text-white">
-          {menu.find(m => m.id === active)?.label}
-        </h1>
-        <p className="text-sm text-gray-500 mt-1 italic">Manage your SRT workflow</p>
-      </div>
-
-      <div className="flex items-center gap-3">
-        {/* 🚪 LOGOUT (NOW WITH ICON) */}
+{page === "dashboard" && user && (
+  <motion.div
+    key="dashboard"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    className="flex min-h-screen bg-white dark:bg-gray-950 transition-all duration-300"
+  >
+    {/* 1. SIDEBAR SECTION */}
+    <aside 
+      className={`${isFolded ? "w-20" : "w-64"} bg-gray-50 dark:bg-gray-900 border-r dark:border-gray-800 p-4 flex flex-col fixed h-full transition-all duration-300 z-50`}
+    >
+      <div className="flex items-center justify-between mb-6">
+        {!isFolded && (
+          <h1 className="font-black text-xl flex items-center gap-2 overflow-hidden whitespace-nowrap">
+            <span className="text-2xl">❄️</span> Snowlabs
+          </h1>
+        )}
         <button
-          onClick={() => {
-            if (window.confirm("Are you sure?")) {
-              signOut(auth);
-              setUser(null);
-              setPage("landing");
-            }
-          }}
-          className="flex items-center gap-2 px-4 py-2.5 text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl border border-transparent hover:border-red-200 transition-all group"
+          onClick={() => setIsFolded(!isFolded)}
+          className={`p-2 rounded-lg bg-gray-200 dark:bg-gray-800 hover:bg-blue-500 hover:text-white transition-all ${isFolded ? "mx-auto" : ""}`}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-          Logout
-        </button>
-
-        {/* ⚙️ SETTINGS ICON */}
-        <button
-          onClick={() => setPage("settings")}
-          className="p-2.5 rounded-xl border border-gray-200 dark:border-gray-800 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 transition-all flex items-center justify-center group"
-          title="Settings"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:rotate-90 transition-transform duration-500">
-            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>
-          </svg>
+          {isFolded ? "→" : "←"}
         </button>
       </div>
-    </header>
+
+      <nav className="space-y-2 flex-1">
+        {menu.map((item) => {
+          const activeStyles = {
+            srt: "bg-blue-600 text-white shadow-lg shadow-blue-500/20",
+            analytics: "bg-green-600 text-white shadow-lg shadow-green-500/20",
+            history: "bg-orange-600 text-white shadow-lg shadow-orange-500/20"
+          };
+          const isActive = active === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActive(item.id)}
+              className={`w-full p-3 rounded-xl flex items-center transition-all duration-200 ${isFolded ? "justify-center" : "gap-3"} ${
+                isActive ? activeStyles[item.id] : "hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-500 font-medium"
+              }`}
+            >
+              <span className={`text-xl ${isActive ? "text-white" : "text-gray-400"}`}>
+                {item.icon}
+              </span>
+              {!isFolded && (
+                <span className="font-bold text-sm overflow-hidden whitespace-nowrap">
+                  {item.label}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </nav>
+
+      <div className={`pt-4 border-t dark:border-gray-800 text-gray-500 font-mono ${isFolded ? "text-center text-[8px]" : "text-[10px]"}`}>
+        {isFolded ? "v1" : "v1.0.4 PROD"}
+      </div>
+    </aside>
+
+    {/* 2. MAIN CONTENT SECTION */}
+    <main className={`flex-1 ${isFolded ? "ml-20" : "ml-64"} transition-all duration-300 overflow-y-auto`}>
+      <div className="p-4 md:p-8 max-w-5xl mx-auto">
+        
+        {/* TOP HEADER (Logout & Settings are back!) */}
+        <header className="flex justify-between items-center mb-10">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-gray-900 dark:text-white">
+              {menu.find(m => m.id === active)?.label}
+            </h1>
+            <p className="text-sm text-gray-500 mt-1 italic">Manage your SRT workflow</p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* 🚪 LOGOUT */}
+            <button
+              onClick={() => {
+                if (window.confirm("Are you sure?")) {
+                  signOut(auth);
+                  setUser(null);
+                  setPage("landing");
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2.5 text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl border border-transparent hover:border-red-200 transition-all group"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              <span className="hidden sm:inline">Logout</span>
+            </button>
+
+            {/* ⚙️ SETTINGS */}
+            <button
+              onClick={() => setPage("settings")}
+              className="p-2.5 rounded-xl border border-gray-200 dark:border-gray-800 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 transition-all flex items-center justify-center group"
+              title="Settings"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:rotate-90 transition-transform duration-500">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </header>
 
     {/* Module switcher continues below... */}
 
