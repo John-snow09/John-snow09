@@ -946,6 +946,8 @@ const showToast = (message, type = "success") => {
         {/*======================Settings========================*/}
       {page === "settings" && (
   <Settings 
+    isFolded={isFolded}
+    setIsFolded={setIsFolded}
     user={user}
     setPage={setPage}
     settingsTab={settingsTab}
