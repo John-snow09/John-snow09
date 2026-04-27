@@ -85,23 +85,37 @@ function App() {
 
   /* 🔐 AUTO LOGIN AFTER VERIFY (NEW FIX) */
   useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-    if (currentUser) {
-      await currentUser.reload(); // ✅ important
+  const unsubscribe = onAuthStateChanged(auth, async (authenticatedUser) => {
+    if (authenticatedUser) {
+      // 1. Initial set from Auth
+      setUser(authenticatedUser);
 
-      if (!currentUser.emailVerified) {
-        setUser(null);
-        return;
+      try {
+        // 2. Fetch the "Real" username from Firestore
+        const q = query(
+          collection(db, "usernames"), 
+          where("uid", "==", authenticatedUser.uid)
+        );
+        
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          // We found their username document!
+          const username = querySnapshot.docs[0].id; // The doc ID is the username
+          
+          // 3. Force the state to include this username
+          setUser({
+            ...authenticatedUser,
+            displayName: username
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching username on login:", error);
       }
-
-      setUser({
-        name: currentUser.displayName,
-        email: currentUser.email,
-        photo: currentUser.photoURL,
-      });
     } else {
       setUser(null);
     }
+    setLoading(false);
   });
 
   return () => unsubscribe();
