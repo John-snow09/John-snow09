@@ -20,7 +20,10 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { getDoc, setDoc } from "firebase/firestore";
+import { deleteDoc } from "firebase/firestore";
 import { auth, provider } from "./firebase";
+import { doc, runTransaction } from "firebase/firestore";
 import { updateProfile } from "firebase/auth";
 import { verifyBeforeUpdateEmail, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
 
@@ -364,23 +367,51 @@ const handleSignup = async () => {
   };
   
          /* USERNAME FUNCTION */
-    const handleUpdateUsername = async () => {
+    const handleUpdateUsername = async (chosenName) => {
+  if (!chosenName) return;
+  
+  const oldName = auth.currentUser.displayName?.toLowerCase().trim();
+  const newNameClean = chosenName.toLowerCase().trim();
+
   try {
-    await updateProfile(auth.currentUser, {
-      displayName: newUsername,
+    const newNameRef = doc(db, "usernames", newNameClean);
+    
+    const docSnap = await getDoc(newNameRef);
+    if (docSnap.exists() && docSnap.data().uid !== auth.currentUser.uid) {
+      alert("This username is taken by another user.");
+      return;
+    }
+
+    await setDoc(newNameRef, {
+      uid: auth.currentUser.uid,
+      createdAt: new Date()
     });
 
-    setUser({
-      ...user,
-      name: newUsername,
-    });
+    if (oldName && oldName !== newNameClean) {
+      await deleteDoc(doc(db, "usernames", oldName));
+    }
 
-    showToast("Username updated ✅");
-    setShowProfile(false);
-   } catch (err) {
-    showToast(err.message, "error");
-   }
-  };      
+    await updateProfile(auth.currentUser, { displayName: chosenName });
+
+    // 1. Refresh the user object so the UI sees the new name
+    setUser({ ...auth.currentUser });
+
+    // 2. Show the success message
+    alert("Username updated!");
+
+    // 3. Swap the tab back to 'profile' so they see the result
+    // (Ensure setSettingsTab is passed into this function or available in scope)
+    if (typeof setSettingsTab === 'function') {
+      setSettingsTab("profile");
+    }
+
+    // ❌ REMOVE THIS LINE:
+    // setPage("dashboard"); 
+
+  } catch (error) {
+    alert("Error: " + error.message);
+  }
+};    
 
   /* 🔁 FORGOT PASSWORD */
 const handleForgotPassword = () => {
@@ -952,6 +983,7 @@ const showToast = (message, type = "success") => {
     setPage={setPage}
     settingsTab={settingsTab}
     setSettingsTab={setSettingsTab}
+    setUser={setUser}
     newUsername={newUsername}
     setNewUsername={setNewUsername}
     handleUpdateUsername={handleUpdateUsername}
