@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { doc, getDoc } from "firebase/firestore";
 // 1. IMPORT DIRECTLY FROM FIREBASE & YOUR CONFIG
@@ -71,35 +72,57 @@ const Settings = ({
       className="min-h-screen flex bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white transition-all duration-300"
     >
       {/* 1. ADAPTIVE SETTINGS SIDEBAR */}
-      <aside className={`${isFolded ? "w-20" : "w-72"} border-r dark:border-gray-800 bg-white dark:bg-gray-900 p-6 flex flex-col shadow-sm fixed h-full transition-all duration-300 z-50`}>
-        <div className="flex items-center justify-between mb-8">
-          {!isFolded && (
-            <div className="flex items-center gap-3 overflow-hidden whitespace-nowrap">
-              <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                 <span className="text-lg">⚙️</span>
-              </div>
-              <h2 className="font-black text-xl tracking-tight">Settings</h2>
-            </div>
-          )}
-          <button onClick={() => setIsFolded(!isFolded)} className={`p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-blue-500 hover:text-white transition-all ${isFolded ? "mx-auto" : ""}`}>
-            {isFolded ? "→" : "←"}
-          </button>
+<aside className={`${isFolded ? "w-20" : "w-72"} border-r dark:border-gray-800 bg-white dark:bg-gray-900 p-6 flex flex-col shadow-sm fixed h-full transition-all duration-300 z-50`}>
+  <div className="flex items-center justify-between mb-8">
+    {!isFolded && (
+      <div className="flex items-center gap-3 overflow-hidden whitespace-nowrap">
+        <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+          <span className="text-lg">⚙️</span>
         </div>
+        <h2 className="font-black text-xl tracking-tight dark:text-white">Settings</h2>
+      </div>
+    )}
+    
+    {/* REFINED FOLDING BUTTON */}
+    <button 
+      onClick={() => setIsFolded(!isFolded)} 
+      className={`p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-blue-500 hover:text-white transition-all flex items-center justify-center ${isFolded ? "mx-auto" : ""}`}
+    >
+      {isFolded ? <FaChevronRight size={12}/> : <FaChevronLeft size={12}/>}
+    </button>
+  </div>
 
-        <button onClick={() => setPage("landing")} className={`flex items-center text-sm font-bold text-gray-500 hover:text-blue-500 mb-8 transition-colors group ${isFolded ? "justify-center" : "gap-2"}`}>
-          <span className="group-hover:-translate-x-1 transition-transform">←</span>
-          {!isFolded && <span className="overflow-hidden whitespace-nowrap">Back to home</span>}
-        </button>
+  {/* BACK TO HOME */}
+  <button 
+    onClick={() => setPage("landing")} 
+    className={`flex items-center text-sm font-bold text-gray-500 hover:text-blue-500 mb-8 transition-colors group ${isFolded ? "justify-center" : "gap-2"}`}
+  >
+    <span className="group-hover:-translate-x-1 transition-transform">←</span>
+    {!isFolded && <span className="overflow-hidden whitespace-nowrap">Back to home</span>}
+  </button>
 
-        <div className="space-y-1">
-          {[{ id: "profile", label: "Profile", icon: "👤" }, { id: "username", label: "Name", icon: "🏷️" }, { id: "email", label: "Security", icon: "✉️" }].map((tab) => (
-            <button key={tab.id} onClick={() => setSettingsTab(tab.id)} className={`w-full flex items-center rounded-xl text-sm font-bold transition-all p-3 ${isFolded ? "justify-center" : "gap-3 px-4"} ${settingsTab === tab.id ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>
-              <span className="text-lg">{tab.icon}</span>
-              {!isFolded && <span className="overflow-hidden whitespace-nowrap">{tab.label}</span>}
-            </button>
-          ))}
-        </div>
-      </aside>
+  {/* NAVIGATION TABS */}
+  <div className="space-y-1">
+    {[
+      { id: "profile", label: "Profile", icon: "👤" }, 
+      { id: "username", label: "Name", icon: "🏷️" }, 
+      { id: "email", label: "Security", icon: "✉️" }
+    ].map((tab) => (
+      <button 
+        key={tab.id} 
+        onClick={() => setSettingsTab(tab.id)} 
+        className={`w-full flex items-center rounded-xl text-sm font-bold transition-all p-3 ${isFolded ? "justify-center" : "gap-3 px-4"} ${
+          settingsTab === tab.id 
+            ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20" 
+            : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+        }`}
+      >
+        <span className="text-lg">{tab.icon}</span>
+        {!isFolded && <span className="overflow-hidden whitespace-nowrap">{tab.label}</span>}
+      </button>
+    ))}
+  </div>
+</aside>
 
       {/* 2. MAIN CONTENT AREA */}
 <div className={`flex-1 ${isFolded ? "ml-20" : "ml-72"} transition-all duration-300 p-8 md:p-12`}>

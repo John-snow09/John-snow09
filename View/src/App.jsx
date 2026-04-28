@@ -1,23 +1,22 @@
 
-import Settings from './components/Settings';
-import Sidebar from './components/Sidebar';
+import Landing from "./components/Landing";
+import Dashboard from "./components/Dashboard";
 import SrtAnalyzer from './components/SrtAnalyzer';
 import Analytics from './components/Analytics';
 import History from './components/History';
+import Settings from './components/Settings';
 import { db } from "./firebase"; // Make sure you exported 'db' in firebase.js!
-import { 
-  collection, 
-  addDoc, 
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import {  
   query, 
   where, 
   getDocs, 
   orderBy, 
-  serverTimestamp 
 } from "firebase/firestore";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { sendEmailVerification, sendPasswordResetEmail } from "firebase/auth";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { getDoc, setDoc } from "firebase/firestore";
@@ -139,49 +138,54 @@ useEffect(() => {
   return () => clearInterval(timer);
 }, [cooldown]);  
 
-  const handleUpload = async () => {
-    if (!files.length) return showToast("Select files");
 
-    const formData = new FormData();
-    files.forEach((f) => formData.append("files", f));
+//Handle upload plus fetch history code
+  const handleUpload = useCallback(async () => {
+  if (!files.length) return showToast("Select files");
 
-    try {
-      setLoading(true);
+  const formData = new FormData();
+  files.forEach((f) => formData.append("files", f));
 
-      const res = await fetch(`${API_BASE}/compare`, {
-        method: "POST",
-        body: formData,
-      });
+  try {
+    setLoading(true);
 
-      const result = await res.json();
-      setData(result);
+    // 1. Fetch from Backend
+    const res = await fetch(`${API_BASE}/compare`, {
+      method: "POST",
+      body: formData,
+    });
 
-      // --- NEW: Save to History ---
-      if (result && auth.currentUser) {
-        try {
-          await addDoc(collection(db, "history"), {
-            userId: auth.currentUser.uid,
-            best_file: result.best_file,
-            mode: result.mode || "Standard", // Defaulting to Standard if mode isn't in result
-            results: result.results.map(r => ({
-              filename: r.filename,
-              score: r.score
-            })),
-            timestamp: serverTimestamp()
-          });
-          console.log("Analysis saved to history!");
-        } catch (dbError) {
-          console.error("Firestore Save Error:", dbError);
-        }
+    if (!res.ok) throw new Error("Backend error");
+    
+    const result = await res.json();
+    setData(result);
+
+    // 2. Save to History (Using your new detailed structure)
+    if (result && auth.currentUser) {
+      try {
+        await addDoc(collection(db, "history"), {
+          userId: auth.currentUser.uid,
+          best_file: result.best_file,
+          mode: result.mode || "Standard",
+          results: result.results.map(r => ({
+            filename: r.filename,
+            score: r.score
+          })),
+          timestamp: serverTimestamp() // Using serverTimestamp for accuracy
+        });
+        console.log("Analysis saved to history!");
+      } catch (dbError) {
+        console.error("Firestore Save Error:", dbError);
       }
-      // --- END NEW SECTION ---
-
-    } catch {
-      showToast("Backend error");
-    } finally {
-      setLoading(false);
     }
-  };
+
+  } catch (error) {
+    console.error("Upload error:", error);
+    showToast(error.message === "Backend error" ? "Backend error" : "Analysis failed");
+  } finally {
+    setLoading(false);
+  }
+}, [files, API_BASE]); // Removed 'user' dependency to prevent unnecessary re-renders
 
   
        /*Fetch History*/  
@@ -712,279 +716,43 @@ const showToast = (message, type = "success") => {
       {/* ================= APP ================= */}
       <AnimatePresence mode="wait">
 
-        {/* LANDING */}
-        {page === "landing" && (
-          <motion.div
-            key="landing"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="min-h-screen flex flex-col"
-          >
-            {/* NAV */}
-<div className="flex justify-between items-center px-4 py-5 md:px-6">
-  <h1 className="font-bold text-lg md:text-xl flex-shrink-0">❄️ Snowlabs</h1>
+        {/* LANDING PAGE */}
+{page === "landing" && (
+  <Landing 
+    user={user} 
+    setUser={setUser}
+    setPage={setPage} 
+    setShowLogin={setShowLogin} 
+    darkMode={darkMode}
+    setDarkMode={setDarkMode}
+  />
+)}
 
-  <div className="flex gap-2 sm:gap-3 items-center">
-    {!user ? (
-      <button
-        onClick={() => setShowLogin(true)}
-        className="px-4 py-2 text-sm rounded-xl border hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-      >
-        Login
-      </button>
-    ) : (
-      <>
-        {/* Settings Icon */}
-        <button
-          onClick={() => setPage("settings")}
-          className="p-2.5 rounded-xl border border-gray-200 dark:border-gray-800 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 transition-all flex items-center justify-center group"
-          title="Settings"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:rotate-90 transition-transform duration-500">
-            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>
-          </svg>
-        </button>
-
-        {/* User Info (Minimalist on Mobile) */}
-        <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 pl-1 pr-2 py-1 rounded-full border dark:border-gray-700">
-          {user.photo && (
-            <img src={user.photo} className="w-6 h-6 rounded-full" referrerPolicy="no-referrer" />
-          )}
-          <button
-            onClick={() => {
-            // Add the confirmation check here
-            if (window.confirm("Are you sure you want to log out?")) {
-            signOut(auth);
-            setUser(null);
-            }
-           }}
-           className="text-[10px] font-bold text-red-500 uppercase px-1 hover:text-red-700 transition-colors"
-         >
-           out
-         </button>
-        </div>
-      </>
+        {/* 2. UNIFIED DASHBOARD */}
+    {page === "dashboard" && user && (
+      <Dashboard 
+        user={user} 
+        setUser={setUser} 
+        setPage={setPage} 
+        active={active} 
+        setActive={setActive}
+        darkMode={darkMode} 
+        setDarkMode={setDarkMode}
+        historyData={historyData}
+        setFiles={setFiles}
+        handleUpload={handleUpload}
+        loading={loading}
+        data={data}
+        fetchHistory={fetchHistory}
+        filteredHistory={filteredHistory}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        selectedIds={selectedIds}
+        toggleSelect={toggleSelect}
+        toggleSelectAll={toggleSelectAll}
+        deleteSelected={deleteSelected}
+      />
     )}
-
-    {/* Theme Toggle (Icon only to save space) */}
-    <button
-      onClick={() => setDarkMode(!darkMode)}
-      className="p-2 rounded-full border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex-shrink-0"
-    >
-      {darkMode ? "☀️" : "🌙"}
-    </button>
-  </div>
-</div>
-
-            {/* HERO */}
-            <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
-
-              <div className="px-4 py-1 mb-6 text-sm rounded-full border bg-gray-50 dark:bg-gray-900">
-                AI-powered subtitle intelligence
-              </div>
-
-              <h1 className="text-5xl font-bold mb-4 max-w-3xl leading-tight">
-                Analyze & Compare Subtitle Files in Seconds
-              </h1>
-
-              <p className="text-gray-500 max-w-xl mb-8 text-lg">
-                Upload multiple SRT files and automatically detect the best quality using intelligent scoring.
-              </p>
-
-              <button
-                onClick={() => {
-                if (!user) {
-                        setShowLogin(true);
-                       } else {
-                     setPage("dashboard");
-                       }
-                      }}
-                className="bg-black text-white dark:bg-white dark:text-black px-8 py-3 rounded-xl flex items-center gap-2 hover:scale-105 transition"
-              >
-                <FaRocket />
-                Get Started
-              </button>
-
-            </div>
-
-            {/* FEATURES */}
-            <div className="grid md:grid-cols-3 gap-6 px-10 pb-14">
-              <div className="border rounded-2xl p-6 text-center shadow-sm">
-                <FaFileAlt className="mx-auto text-2xl mb-2" />
-                Fast Analysis
-              </div>
-
-              <div className="border rounded-2xl p-6 text-center shadow-sm">
-                <FaChartBar className="mx-auto text-2xl mb-2" />
-                AI Scoring Engine
-              </div>
-
-              <div className="border rounded-2xl p-6 text-center shadow-sm">
-                <FaHistory className="mx-auto text-2xl mb-2" />
-                Smart Comparison
-              </div>
-            </div>
-
-            {/* FOOTER */}
-            <div className="flex justify-center gap-8 p-6 text-3xl border-t">
-
-              <a href="https://instagram.com/___john_snow_" target="_blank">
-                <FaInstagram className="hover:text-pink-500 transition hover:scale-110" />
-              </a>
-
-              <a href="https://x.com/JohnSnow320411" target="_blank">
-                <FaTwitter className="hover:text-blue-500 transition hover:scale-110" />
-              </a>
-
-              <a href="https://github.com/John-snow09" target="_blank">
-                <FaGithub className="hover:text-black transition hover:scale-110" />
-              </a>
-
-            </div>
-
-          </motion.div>
-        )}
-
-        {/* ❄️ UNIFIED DASHBOARD */}
-{page === "dashboard" && user && (
-  <motion.div
-    key="dashboard"
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    className="flex min-h-screen bg-white dark:bg-gray-950 transition-all duration-300"
-  >
-    {/* 1. SIDEBAR SECTION */}
-    <aside 
-      className={`${isFolded ? "w-20" : "w-64"} bg-gray-50 dark:bg-gray-900 border-r dark:border-gray-800 p-4 flex flex-col fixed h-full transition-all duration-300 z-50`}
-    >
-      <div className="flex items-center justify-between mb-6">
-        {!isFolded && (
-          <h1 className="font-black text-xl flex items-center gap-2 overflow-hidden whitespace-nowrap">
-            <span className="text-2xl">❄️</span> Snowlabs
-          </h1>
-        )}
-        <button
-          onClick={() => setIsFolded(!isFolded)}
-          className={`p-2 rounded-lg bg-gray-200 dark:bg-gray-800 hover:bg-blue-500 hover:text-white transition-all ${isFolded ? "mx-auto" : ""}`}
-        >
-          {isFolded ? "→" : "←"}
-        </button>
-      </div>
-
-      <nav className="space-y-2 flex-1">
-        {menu.map((item) => {
-          const activeStyles = {
-            srt: "bg-blue-600 text-white shadow-lg shadow-blue-500/20",
-            analytics: "bg-green-600 text-white shadow-lg shadow-green-500/20",
-            history: "bg-orange-600 text-white shadow-lg shadow-orange-500/20"
-          };
-          const isActive = active === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActive(item.id)}
-              className={`w-full p-3 rounded-xl flex items-center transition-all duration-200 ${isFolded ? "justify-center" : "gap-3"} ${
-                isActive ? activeStyles[item.id] : "hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-500 font-medium"
-              }`}
-            >
-              <span className={`text-xl ${isActive ? "text-white" : "text-gray-400"}`}>
-                {item.icon}
-              </span>
-              {!isFolded && (
-                <span className="font-bold text-sm overflow-hidden whitespace-nowrap">
-                  {item.label}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </nav>
-
-      <div className={`pt-4 border-t dark:border-gray-800 text-gray-500 font-mono ${isFolded ? "text-center text-[8px]" : "text-[10px]"}`}>
-        {isFolded ? "v1" : "v1.0.4 PROD"}
-      </div>
-    </aside>
-
-    {/* 2. MAIN CONTENT SECTION */}
-    <main className={`flex-1 ${isFolded ? "ml-20" : "ml-64"} transition-all duration-300 overflow-y-auto`}>
-      <div className="p-4 md:p-8 max-w-5xl mx-auto">
-        
-        {/* TOP HEADER (Logout & Settings are back!) */}
-        <header className="flex justify-between items-center mb-10">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-gray-900 dark:text-white">
-              {menu.find(m => m.id === active)?.label}
-            </h1>
-            <p className="text-sm text-gray-500 mt-1 italic">Manage your SRT workflow</p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* 🚪 LOGOUT */}
-            <button
-              onClick={() => {
-                if (window.confirm("Are you sure?")) {
-                  signOut(auth);
-                  setUser(null);
-                  setPage("landing");
-                }
-              }}
-              className="flex items-center gap-2 px-4 py-2.5 text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl border border-transparent hover:border-red-200 transition-all group"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-              <span className="hidden sm:inline">Logout</span>
-            </button>
-
-            {/* ⚙️ SETTINGS */}
-            <button
-              onClick={() => setPage("settings")}
-              className="p-2.5 rounded-xl border border-gray-200 dark:border-gray-800 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 transition-all flex items-center justify-center group"
-              title="Settings"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:rotate-90 transition-transform duration-500">
-                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>
-              </svg>
-            </button>
-          </div>
-        </header>
-
-    {/* Module switcher continues below... */}
-
-                <div className="min-h-[60vh]">
-
-                  {/*===================SRT Analyzer=================*/}
-                  {active === "srt" && (
-                    <SrtAnalyzer setFiles={setFiles} handleUpload={handleUpload} loading={loading} data={data} />
-                  )}
-     
-
-                  {/*================Analytics================*/}
-                  {active === "analytics" && (
-                    <Analytics historyData={historyData} />
-                  )}
-
-
-                  {/*==================History==================*/}
-                  {active === "history" && (
-                    <History 
-                      historyData={historyData}
-                      selectedIds={selectedIds}
-                      toggleSelect={toggleSelect}
-                      toggleSelectAll={toggleSelectAll}
-                      deleteSelected={deleteSelected}
-                      fetchHistory={fetchHistory}
-                      searchQuery={searchQuery}
-                      setSearchQuery={setSearchQuery}
-                      filteredHistory={filteredHistory}
-                    />
-                  )}
-                </div>
-              </div>
-            </main>
-          </motion.div>
-        )}
       </AnimatePresence>
 
 

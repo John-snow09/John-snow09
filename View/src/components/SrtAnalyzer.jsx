@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from "framer-motion";
 import { FaFileAlt } from "react-icons/fa";
 
@@ -74,4 +74,4 @@ const SrtAnalyzer = ({ setFiles, handleUpload, loading, data }) => {
   );
 };
 
-export default SrtAnalyzer;
+export default memo(SrtAnalyzer);
