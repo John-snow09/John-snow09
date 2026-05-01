@@ -1,4 +1,5 @@
 
+import { StatusBar, Style } from '@capacitor/status-bar';
 import Landing from "./components/Landing";
 import Dashboard from "./components/Dashboard";
 import SrtAnalyzer from './components/SrtAnalyzer';
@@ -126,6 +127,14 @@ useEffect(() => {
     setPage("landing");
   }
 }, [page, user]);
+
+
+// Call this when the app loads
+const setupStatusBar = async () => {
+  await StatusBar.setBackgroundColor({ color: '#000000' }); // Your dashboard color
+  await StatusBar.setStyle({ style: Style.Dark }); // Makes icons (time/battery) white
+};
+
   
   /*TIMER LOGIC*/  
 useEffect(() => {

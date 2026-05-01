@@ -1,0 +1,6 @@
+{
+  "appId": "com.snowlabs.app",
+  "appName": "Snowlabs",
+  "webDir": "view/dist", 
+  "bundledWebRuntime": false
+}
