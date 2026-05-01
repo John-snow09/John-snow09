@@ -1,5 +1,5 @@
 
-import { StatusBar, Style } from '@capacitor/status-bar';
+import { Capacitor } from '@capacitor/core';
 import Landing from "./components/Landing";
 import Dashboard from "./components/Dashboard";
 import SrtAnalyzer from './components/SrtAnalyzer';
@@ -129,11 +129,24 @@ useEffect(() => {
 }, [page, user]);
 
 
-// Call this when the app loads
-const setupStatusBar = async () => {
-  await StatusBar.setBackgroundColor({ color: '#000000' }); // Your dashboard color
-  await StatusBar.setStyle({ style: Style.Dark }); // Makes icons (time/battery) white
-};
+// Inside your useEffect or setup function
+useEffect(() => {
+    const setupStatusBar = async () => {
+      // Check if we are running on Android/iOS
+      if (Capacitor.isNativePlatform()) {
+        try {
+          // Dynamically load the plugin only on mobile
+          const { StatusBar, Style } = await import('@capacitor/status-bar');
+          await StatusBar.setBackgroundColor({ color: '#0f172a' }); // Your dark color
+          await StatusBar.setStyle({ style: Style.Dark });
+        } catch (e) {
+          print("StatusBar plugin not found, skipping.");
+        }
+      }
+    };
+
+    setupStatusBar();
+  }, []);
 
   
   /*TIMER LOGIC*/  
