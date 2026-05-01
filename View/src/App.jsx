@@ -129,18 +129,25 @@ useEffect(() => {
 }, [page, user]);
 
 
-// Inside your useEffect or setup function
+// setupStatusBar
 useEffect(() => {
     const setupStatusBar = async () => {
-      // Check if we are running on Android/iOS
       if (Capacitor.isNativePlatform()) {
         try {
-          // Dynamically load the plugin only on mobile
           const { StatusBar, Style } = await import('@capacitor/status-bar');
-          await StatusBar.setBackgroundColor({ color: '#0f172a' }); // Your dark color
+          
+          // 1. Matches your background
+          await StatusBar.setBackgroundColor({ color: '#0f172a' }); 
+          
+          // 2. Makes clock/battery icons white
           await StatusBar.setStyle({ style: Style.Dark });
+
+          // 3. 🚀 THE FIX: Pushes your content down so it's not hidden
+          await StatusBar.setOverlaysWebView({ overlay: false });
+
         } catch (e) {
-          print("StatusBar plugin not found, skipping.");
+          // Note: use console.log instead of print
+          console.log("StatusBar plugin not found, skipping.");
         }
       }
     };
@@ -781,6 +788,8 @@ const showToast = (message, type = "success") => {
         {/*======================Settings========================*/}
       {page === "settings" && (
   <Settings 
+    darkMode={darkMode}
+    setDarkMode={setDarkMode}
     isFolded={isFolded}
     setIsFolded={setIsFolded}
     user={user}
